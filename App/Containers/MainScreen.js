@@ -119,7 +119,7 @@ class MainScreen extends Component {
   }
 
   renderBigProducts() {
-    const inventories = this.props.inventories.filter((inv) => (this.state.selectedCategoryId == -1 ? true : inv.category_id == this.state.selectedCategoryId) && (inv.upc_plu_sku.toLowerCase().indexOf(this.state.productSearchString.toLowerCase()) != -1));
+    const inventories = this.props.inventories.filter((inv) => (this.state.selectedCategoryId == -1 ? true : inv.category_id == this.state.selectedCategoryId) && (inv.title.toLowerCase().indexOf(this.state.productSearchString.toLowerCase()) != -1));
     
     return inventories.map((ps, i) => {
       if (i % this.state.productsNumOfRow == 0) {
@@ -128,8 +128,12 @@ class MainScreen extends Component {
             {
               inventories.filter((pp, ii) => ii >= i && ii < i + this.state.productsNumOfRow).map((product, index) => {
                 return (
-                  <View key={'p_' + index.toString()} style={[styles.productContainer, i == 0 ? styles.firstProductContainer : null]}>
-                    <ProductBig productImage={product.image} productLabel={product.upc_plu_sku} />
+                  <View key={'p_' + index.toString()}>
+                    <View style={[styles.productContainer, i == 0 ? styles.firstProductContainer : null]}>
+                      <ProductBig productImage={product.image} productLabel={product.title} />
+                      <View style={styles.verticalSeparator}></View>
+                    </View>
+                    <View style={styles.horizontalSeparator}></View>
                   </View>
                 );
               })
@@ -141,7 +145,7 @@ class MainScreen extends Component {
   }
 
   renderSmallProducts() {
-    const inventories = this.props.inventories.filter((inv) => (this.state.selectedCategoryId == -1 ? true : inv.category_id == this.state.selectedCategoryId) && (inv.upc_plu_sku.toLowerCase().indexOf(this.state.productSearchString.toLowerCase()) != -1));
+    const inventories = this.props.inventories.filter((inv) => (this.state.selectedCategoryId == -1 ? true : inv.category_id == this.state.selectedCategoryId) && (inv.title.toLowerCase().indexOf(this.state.productSearchString.toLowerCase()) != -1));
 
     return inventories.map((product, index) => {
       return (
@@ -149,7 +153,7 @@ class MainScreen extends Component {
           key={'product_' + index.toString()} 
           style={index == 0 ? styles.firstSmallProduct : index == inventories.length - 1 ? styles.lastSmallProduct : null}
         >
-          <ProductSmall productImage={product.image} productLabel={product.upc_plu_sku} productNum={product.sub_quantity} />
+          <ProductSmall productImage={product.image} productLabel={product.title} productNum={product.sub_quantity} />
         </View>
       );
     })
@@ -274,7 +278,7 @@ class MainScreen extends Component {
     let categories = [{category: 'All', id: -1, num: this.props.inventories.length}];
     this.props.categories.forEach(c => {
       const num = this.props.inventories.filter((inv) => inv.category_id == c.id).length;
-      categories.push({category: c.category, id: c.id, num});
+      categories.push({category: c.category, id: c.id, num, image: c.image});
     });
     return (
       <ModalCategories

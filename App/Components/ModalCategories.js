@@ -29,7 +29,7 @@ export default class ModalCategories extends Component {
                   onPress={() => this.props.onSelectCategory(c.id)} 
                   style={[styles.categoriesModalRow, this.props.selectedId == c.id ? {backgroundColor: ext.hexToRgba(Colors.mainColor, 0.3)} : null]}
                 >
-                  <Image source={Images.product} resizeMode='cover' style={styles.categoriesModalImage} />
+                  <Image source={c.image && c.image.url ? {uri: c.image.url} : Images.product} resizeMode='cover' style={styles.categoriesModalImage} />
                   <View style={styles.categoriesModalInfo}>
                     <Text style={styles.categoriesModalName}>{c.category}</Text>
                     <Text style={styles.categoriesModalNum}>{c.num.toString() + " Item(s)"}</Text>

@@ -6,7 +6,7 @@ import { Images } from '../Themes'
 
 export default class ProductSmall extends Component {
   static propTypes = {
-    productImage: PropTypes.string,
+    productImage: PropTypes.object,
     productLabel: PropTypes.string,
     productNum: PropTypes.number,
   }
@@ -14,7 +14,7 @@ export default class ProductSmall extends Component {
   render () {
     return (
       <View style={styles.container}>
-        <Image source={this.props.productImage ? {uri: this.props.productImage} : Images.product} resizeMode='cover' style={styles.image} />
+        <Image source={this.props.productImage && this.props.productImage.url ? {uri: this.props.productImage.url} : Images.product} style={styles.image} resizeMode='cover' />
         <View style={styles.infoContainer}>
           <Text style={styles.name}>{this.props.productLabel}</Text>
           <View style={styles.rightContainer}>

@@ -27,8 +27,17 @@ export default StyleSheet.create({
   productContainer: {
     width: productWidth,
     paddingVertical: 14,
-    borderColor: Colors.border,
-    borderWidth: 0.5,
+    flexDirection: 'row',
+  },
+  horizontalSeparator: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.border,
+  },
+  verticalSeparator: {
+    marginVertical: -14,
+    width: 1,
+    backgroundColor: Colors.border,
   },
   firstProductContainer: {
     borderTopWidth: 0,
