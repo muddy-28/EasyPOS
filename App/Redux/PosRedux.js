@@ -25,6 +25,7 @@ export const INITIAL_STATE = Immutable({
   fetching: null,
   payload: null,
   error: null,
+  user: {},
   inventories: [],
   categories: [],
 })

@@ -74,7 +74,14 @@ const ApplicationStyles = {
     borderColor: Colors.ember,
     alignItems: 'center',
     textAlign: 'center'
-  }
+  },
+  shadow: {
+    elevation: 2,
+    shadowColor: '#777777',
+    shadowRadius: 4,
+    shadowOpacity: 0.6,
+    shadowOffset: { width: 0, height: 0 },
+  },
 }
 
 export default ApplicationStyles

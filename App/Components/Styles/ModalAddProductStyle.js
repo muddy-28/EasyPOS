@@ -16,6 +16,7 @@ export default StyleSheet.create({
     borderRadius: 6,
     backgroundColor: 'white',
     margin: 16,
+    paddingBottom: 12,
   },
   borderRow: {
     borderBottomWidth: 1,
@@ -86,11 +87,12 @@ export default StyleSheet.create({
   size: {
     marginTop: 18,
     marginLeft: 16,
-    marginBottom: 14,
+    marginBottom: 10,
     color: Colors.mainColor,
   },
   buttonsRow: {
     marginHorizontal: 16,
+    marginVertical: 4,
     justifyContent: 'space-between',
     alignItems: 'center',
     flexDirection: 'row',
@@ -112,6 +114,7 @@ export default StyleSheet.create({
     color: 'white',
   },
   color: {
+    marginTop: 14,
     color: '#555555',
   },
   lastButtonsRow: {

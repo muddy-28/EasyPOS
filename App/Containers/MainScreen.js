@@ -11,7 +11,7 @@ import HeaderMain from '../Components/HeaderMain';
 import ProductBig from '../Components/ProductBig';
 import ProductSmall from '../Components/ProductSmall';
 import OrderCard from '../Components/OrderCard';
-import ModalCustomers from '../Components/ModalCustomers';
+// import ModalCustomers from '../Components/ModalCustomers';
 import ModalCategories from '../Components/ModalCategories';
 import ModalAddDiscount from '../Components/ModalAddDiscount';
 import ModalAddProduct from '../Components/ModalAddProduct';
@@ -19,12 +19,12 @@ import ModalCharge from '../Components/ModalCharge';
 import ModalAlert from '../Components/ModalAlert';
 import ModalConfirm from '../Components/ModalConfirm';
 import ModalPayment from '../Components/ModalPayment';
+import { hexToRgba } from '../Lib/helpers';
 
 class MainScreen extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      showCustomersModal: false,
       showCategoriesModal: false,
       showAddDiscountModal: false,
       showAddProductModal: false,
@@ -36,12 +36,7 @@ class MainScreen extends Component {
       productsListSelected: false,
       searchSelected: false,
       productSearchString: '',
-      productsNumOfRow: 4,
-      customers: [
-        {id: 1, name: 'Hoang Thai', phone: '+84 0905 070 017', email: 'hoang8x.pts@gmail.com'},
-        {id: 2, name: 'Eric Johnson', phone: '+123 456 789 0032', email: 'eric8x.pts@gmail.com'},
-        {id: 3, name: 'Kristyn Miguez', phone: '+1 234 567 890', email: 'kristyn8x.pts@gmail.com'},
-      ],
+      productsNumPerRow: 4,
       orders: [
         [
           {kind: 'green', no: '14876', price: 28, name: 'James'},
@@ -60,25 +55,18 @@ class MainScreen extends Component {
           {kind: 'green', no: '14887', price: 31, name: 'James'},
         ],
       ],
-      customerSelectedId: -1,
-      customerSearchString: '',
-      cashiers: [
-        {customerId: 1, name: "Strappy jean shoes", description: "Strappy jean shoes, size 42", price: "$175.00", redNum: 1},
-        {customerId: 1, name: "Bag Denim", description: "Bag Denim Leather, Black", price: "$120.00", redNum: 3},
-        {customerId: 1, name: "Levi's Collection", description: "Levi's Collection", price: "$45.00", redNum: 1},
-      ],
       selectedCategoryId: -1,
+      selectedProductId: -1,
+      shoppingCart: [],
       // add discount dialog
       calcMethodSelectedIndex: 0,
       displayNumber: 0,
       selectedFuncIndex: -1,
       selectedNumIndex: -1,
       // add product dialog
-      productNumber: 0,
+      productNumber: 1,
       productSizes: ['S', 'M', 'X', 'L', 'XL', 'XXL'],
       productColors: ['Red', 'Green', 'Blue', 'White', 'Yellow', 'Orange', 'Violet', 'Purple', 'Brown', 'Black', 'Gold', 'Silver'],
-      productAvailableNumber: 20,
-      productPrice: 20,
       productSelectedSizeIndex: 1,
       productSelectedColorIndex: 1,
       // payment dialog
@@ -91,6 +79,34 @@ class MainScreen extends Component {
     this.props.getCategories(this.props.user.auth_token);
   }
 
+  showOneModal(name) {
+    this.setState({
+      showCategoriesModal: name == 'category',
+      showAddDiscountModal: name == 'addDiscount',
+      showAddProductModal: name == 'addProduct',
+      showAlertModal: name == 'alert',
+      showChargeModal: name == 'charge',
+      showConfirmModal: name == 'confirm',
+      showPaymentModal: name == 'payment',
+    });
+  }
+
+  onClickExpand() {
+    this.showOneModal('category');
+    this.setState({
+      productSelected: true,
+    })
+  }
+
+  onClickAddProduct() {
+    if (this.props.inventories.length == 0 || this.state.selectedProductId == -1) return;
+
+    const inventories = this.props.inventories.filter((inv) => (this.state.selectedCategoryId == -1 ? true : inv.category_id == this.state.selectedCategoryId) && inv.id == this.state.selectedProductId && (inv.title.toLowerCase().indexOf(this.state.productSearchString.toLowerCase()) != -1));
+    if (inventories.length == 0) return;
+
+    this.showOneModal('addProduct');
+  }
+
   renderHeader() {
     return (
       <HeaderMain 
@@ -100,11 +116,11 @@ class MainScreen extends Component {
         onClickProduct={() => this.setState({productSelected: true})} 
         onClickOrders={() => this.setState({productSelected: false})} 
         onClickSearch={() => this.setState({searchSelected: true})}
-        onClickExpand={() => this.setState({showCategoriesModal: true, productSelected: true})}
+        onClickExpand={() => this.onClickExpand()}
         onClickList={() => this.setState({productsListSelected: !this.state.productsListSelected})}
         onChangeSearchText={(productSearchString) => this.setState({productSearchString})}
         onClearSearchText={()=>this.setState({searchSelected: false, productSearchString: ''})}
-        onClickAddProduct={() => this.setState({showAddProductModal: true})}
+        onClickAddProduct={() => this.onClickAddProduct()}
         cartNum={0}
       />
     );
@@ -122,15 +138,15 @@ class MainScreen extends Component {
     const inventories = this.props.inventories.filter((inv) => (this.state.selectedCategoryId == -1 ? true : inv.category_id == this.state.selectedCategoryId) && (inv.title.toLowerCase().indexOf(this.state.productSearchString.toLowerCase()) != -1));
     
     return inventories.map((ps, i) => {
-      if (i % this.state.productsNumOfRow == 0) {
+      if (i % this.state.productsNumPerRow == 0) {
         return (
           <View key={'row_' + i.toString()} style={styles.productsContainer}>
             {
-              inventories.filter((pp, ii) => ii >= i && ii < i + this.state.productsNumOfRow).map((product, index) => {
+              inventories.filter((pp, ii) => ii >= i && ii < i + this.state.productsNumPerRow).map((product, index) => {
                 return (
                   <View key={'p_' + index.toString()}>
-                    <View style={[styles.productContainer, i == 0 ? styles.firstProductContainer : null]}>
-                      <ProductBig productImage={product.image} productLabel={product.title} />
+                    <View style={[styles.productContainer, this.state.selectedProductId == product.id ? {backgroundColor: hexToRgba(Colors.mainColor, 0.3),} : null]}>
+                      <ProductBig productImage={product.image} productLabel={product.title} onPress={() => this.setState({selectedProductId: product.id})} />
                       <View style={styles.verticalSeparator}></View>
                     </View>
                     <View style={styles.horizontalSeparator}></View>
@@ -202,17 +218,14 @@ class MainScreen extends Component {
       <View style={[styles.commonPart, styles.customerPart]}>
         <View style={styles.customerContainer}>
           <Image source={Images.customer} resizeMode='cover' style={styles.customerImage} />
-          {this.state.customerSelectedId == -1 ? 
-            <Text style={styles.customerText}>Add Customer</Text> : 
-            <View>
-              <Text style={styles.customerName}>{this.state.customers.filter((c) => c.id == this.state.customerSelectedId)[0].name}</Text>
-              <Text style={styles.customerPhone}>{this.state.customers.filter((c) => c.id == this.state.customerSelectedId)[0].phone}</Text>
-              <Text style={styles.customerEmail}>{this.state.customers.filter((c) => c.id == this.state.customerSelectedId)[0].email}</Text>
-            </View>
-          }
+          <View>
+            <Text style={styles.customerName}>Hoang Thai</Text>
+            <Text style={styles.customerPhone}>+84 0905 070 017</Text>
+            <Text style={styles.customerEmail}>{this.props.user.email}</Text>
+          </View>
         </View>
-        <TouchableOpacity style={styles.iconContainer} onPress={() => this.state.customerSelectedId == -1 ? this.setState({showCustomersModal: true}) : this.setState({customerSelectedId: -1})}>
-          <Icon name={this.state.customerSelectedId == -1 ? 'plus-circle-outline' : 'minus-circle-outline'} size={24} color='#dadada' />
+        <TouchableOpacity style={styles.iconContainer}>
+          <Icon size={24} color='#dadada' />
         </TouchableOpacity>
       </View>
     );
@@ -221,7 +234,7 @@ class MainScreen extends Component {
   renderCashiers() {
     return (
       <View style={[styles.commonPart, styles.cashiersPart]}>
-        {this.state.cashiers.filter(c => c.customerId == this.state.customerSelectedId).map((c, index) => {
+        {/* {this.state.cashiers.filter(c => c.customerId == this.state.customerSelectedId).map((c, index) => {
           return (
             <View key={'cashier_' + index.toString()} style={styles.cashierRow}>
               <View style={styles.cashierImageContainer}>
@@ -237,8 +250,7 @@ class MainScreen extends Component {
               </View>
             </View>
           );
-        })}
-
+        })} */}
       </View>
     );
   }
@@ -259,18 +271,6 @@ class MainScreen extends Component {
           <Text style={styles.calcText}>$0.00</Text>
         </View>
       </View>
-    );
-  }
-
-  renderCustomersModal() {
-    return (
-      <ModalCustomers 
-        visible={this.state.showCustomersModal} 
-        customers={this.state.customers}
-        customerSearchString={this.state.customerSearchString}
-        onChangeCustomerSearchString={(customerSearchString) => this.setState({customerSearchString})}
-        onSelectCustomer={(id) => this.setState({customerSelectedId: id, showCustomersModal: false})}
-      />
     );
   }
 
@@ -308,6 +308,10 @@ class MainScreen extends Component {
   }
 
   renderAddProductModal() {
+    if (!this.state.showAddProductModal) return;
+
+    const product = this.props.inventories.filter(inv => inv.id == this.state.selectedProductId)[0];
+
     return (
       <ModalAddProduct
         visible={this.state.showAddProductModal}
@@ -316,10 +320,10 @@ class MainScreen extends Component {
         onProcProductNumber={(st) => this.setState({productNumber: this.state.productNumber + st})}
         productSizes={this.state.productSizes}
         productColors={this.state.productColors}
-        productAvailableNumber={this.state.productAvailableNumber}
+        productAvailableNumber={product.sub_quantity}
+        productPrice={parseFloat(product.price) * this.state.productNumber}
         productSelectedSizeIndex={this.state.productSelectedSizeIndex}
         productSelectedColorIndex={this.state.productSelectedColorIndex}
-        productPrice={this.state.productPrice}
         onChangeProductSelectedSizeIndex={(index) => this.setState({productSelectedSizeIndex: index})}
         onChangeProductSelectedColorIndex={(index) => this.setState({productSelectedColorIndex: index})}
       />
@@ -377,7 +381,7 @@ class MainScreen extends Component {
     return (
       <View style={styles.container}>
         {this.renderHeader()}
-        {this.renderCustomersModal()}
+        {/* {this.renderCustomersModal()} */}
         {this.renderCategoriesModal()}
         {this.renderAddDiscountModal()}
         {this.renderAddProductModal()}
@@ -414,7 +418,7 @@ const mapDispatchToProps = (dispatch) => {
 export default connect(mapStateToProps, mapDispatchToProps)(MainScreen)
 
 
-
+// showCustomersModal: false,
 // products: [
 //   {label: "Sport Shoes for Man", limit: 20}, 
 //   {label: "Levi's collection", limit: 24}, 
@@ -433,3 +437,74 @@ export default connect(mapStateToProps, mapDispatchToProps)(MainScreen)
 //   {label: "Strappy Jean", limit: 31}, 
 //   {label: "Jean coat", limit: 35},
 // ],
+// customers: [
+//   {id: 1, name: 'Hoang Thai', phone: '+84 0905 070 017', email: 'hoang8x.pts@gmail.com'},
+//   {id: 2, name: 'Eric Johnson', phone: '+123 456 789 0032', email: 'eric8x.pts@gmail.com'},
+//   {id: 3, name: 'Kristyn Miguez', phone: '+1 234 567 890', email: 'kristyn8x.pts@gmail.com'},
+// ],
+// customerSelectedId: -1,
+// customerSearchString: '',
+// cashiers: [
+//   {customerId: 1, name: "Strappy jean shoes", description: "Strappy jean shoes, size 42", price: "$175.00", redNum: 1},
+//   {customerId: 1, name: "Bag Denim", description: "Bag Denim Leather, Black", price: "$120.00", redNum: 3},
+//   {customerId: 1, name: "Levi's Collection", description: "Levi's Collection", price: "$45.00", redNum: 1},
+// ],
+
+
+  /*renderCustomersModal() {
+    return (
+      <ModalCustomers 
+        visible={this.state.showCustomersModal} 
+        customers={this.state.customers}
+        customerSearchString={this.state.customerSearchString}
+        onChangeCustomerSearchString={(customerSearchString) => this.setState({customerSearchString})}
+        onSelectCustomer={(id) => this.setState({customerSelectedId: id, showCustomersModal: false})}
+      />
+    );
+  }*/
+
+  /*renderCustomer() {
+    return (
+      <View style={[styles.commonPart, styles.customerPart]}>
+        <View style={styles.customerContainer}>
+          <Image source={Images.customer} resizeMode='cover' style={styles.customerImage} />
+          {this.state.customerSelectedId == -1 ? 
+            <Text style={styles.customerText}>Add Customer</Text> : 
+            <View>
+              <Text style={styles.customerName}>{this.state.customers.filter((c) => c.id == this.state.customerSelectedId)[0].name}</Text>
+              <Text style={styles.customerPhone}>{this.state.customers.filter((c) => c.id == this.state.customerSelectedId)[0].phone}</Text>
+              <Text style={styles.customerEmail}>{this.state.customers.filter((c) => c.id == this.state.customerSelectedId)[0].email}</Text>
+            </View>
+          }
+        </View>
+        <TouchableOpacity style={styles.iconContainer} onPress={() => this.state.customerSelectedId == -1 ? this.setState({showCustomersModal: true}) : this.setState({customerSelectedId: -1})}>
+          <Icon name={this.state.customerSelectedId == -1 ? 'plus-circle-outline' : 'minus-circle-outline'} size={24} color='#dadada' />
+        </TouchableOpacity>
+      </View>
+    );
+  }*/
+
+  /*renderCashiers() {
+    return (
+      <View style={[styles.commonPart, styles.cashiersPart]}>
+        {this.state.cashiers.filter(c => c.customerId == this.state.customerSelectedId).map((c, index) => {
+          return (
+            <View key={'cashier_' + index.toString()} style={styles.cashierRow}>
+              <View style={styles.cashierImageContainer}>
+                <Image source={Images.product} resizeMode="cover" style={styles.cashierImage} />
+                {c.redNum > 1 ? <View style={styles.cashierRedNumContainer}><Text style={styles.cashierRedNum}>{c.redNum}</Text></View> : null}
+              </View>
+              <View style={[styles.cashierRightContainer, index == this.state.cashiers.filter(c => c.customerId == this.state.customerSelectedId).length - 1 ? styles.cashierLastRightContainer : null]}>
+                <View style={styles.cashierInfoContainer}>
+                  <Text style={styles.cashierName}>{c.name}</Text>
+                  <Text style={styles.cashierDescription}>{c.description}</Text>
+                </View>
+                <Text style={styles.cashierPrice}>{c.price}</Text>
+              </View>
+            </View>
+          );
+        })}
+
+      </View>
+    );
+  }*/

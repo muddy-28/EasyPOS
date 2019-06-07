@@ -4,7 +4,7 @@ import { Colors, Metrics } from '../../Themes/'
 const {width, height} = Dimensions.get('window');
 const leftPanelWidth = width * Metrics.bigPanelRate;
 const rightPanelWidth = width * Metrics.smallPanelRate;
-const productWidth = leftPanelWidth / 4;
+const productWidth = (leftPanelWidth) / 4;
 
 export default StyleSheet.create({
   container: {

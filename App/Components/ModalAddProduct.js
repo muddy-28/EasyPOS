@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import { View, Text, TouchableOpacity, Modal } from 'react-native'
 import styles from './Styles/ModalAddProductStyle'
 import CustomIcon from './CustomIcon'
+import { ApplicationStyles } from '../Themes';
 
 export default class ModalAddProduct extends Component {
   static propTypes = {
@@ -21,6 +22,8 @@ export default class ModalAddProduct extends Component {
   }
 
   render () {
+    const numPerRow = 6;
+
     return (
       <Modal animationType="slide" transparent={true} visible={this.props.visible}>
         <View style={styles.screenContainer}>
@@ -31,13 +34,17 @@ export default class ModalAddProduct extends Component {
               <TouchableOpacity onPress={() => this.props.onClose()}><CustomIcon name="black_add" /></TouchableOpacity>
             </View>
             <View style={[styles.commonRow, styles.secondRow, styles.borderRow]}>
-              <TouchableOpacity onPress={() => this.props.onProcProductNumber(-1)} style={styles.setCountButton}>
+              <TouchableOpacity 
+                disabled={this.props.productNumber == 1} 
+                onPress={() => this.props.onProcProductNumber(-1)} 
+                style={[styles.setCountButton, this.props.productNumber != 1 ? ApplicationStyles.shadow : null]}
+              >
                 <CustomIcon name="remove" />
               </TouchableOpacity>
               <View style={styles.displayNumberContainer}>
                 <Text style={styles.displayNumber}>{this.props.productNumber}</Text>
               </View>
-              <TouchableOpacity onPress={() => this.props.onProcProductNumber(1)} style={styles.setCountButton}>
+              <TouchableOpacity onPress={() => this.props.onProcProductNumber(1)} style={[styles.setCountButton, ApplicationStyles.shadow]}>
                 <CustomIcon name="add" />
               </TouchableOpacity>
             </View>
@@ -63,32 +70,29 @@ export default class ModalAddProduct extends Component {
               })}
             </View>
             <Text style={[styles.size, styles.color]}>Color</Text>
-            <View style={styles.buttonsRow}>
-              {this.props.productColors.filter((c, i) => i < 6).map((color, i) => {
-                return (
-                  <TouchableOpacity 
-                    key={'color_' + i.toString()} 
-                    style={[styles.button, styles.commonRow, this.props.productSelectedColorIndex == i ? styles.selectedButton : null]}
-                    onPress={() => this.props.onChangeProductSelectedColorIndex(i)}
-                  >
-                    <Text style={[this.props.productSelectedColorIndex == i ? styles.selectedButtonText : styles.buttonText]}>{color}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-            <View style={[styles.buttonsRow, styles.lastButtonsRow]}>
-              {this.props.productColors.filter((c, i) => i >= 6).map((color, i) => {
-                return (
-                  <TouchableOpacity 
-                    key={'color_' + (i + 6).toString()} 
-                    style={[styles.button, styles.commonRow, this.props.productSelectedColorIndex == i + 6 ? styles.selectedButton : null]}
-                    onPress={() => this.props.onChangeProductSelectedColorIndex(i + 6)}
-                  >
-                    <Text style={[this.props.productSelectedColorIndex == i + 6 ? styles.selectedButtonText : styles.buttonText]}>{color}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+            {
+              this.props.productColors.map((ac, ai) => {
+                if (ai % numPerRow == 0) {
+                  return (
+                    <View key={"a_" + ai.toString()} style={styles.buttonsRow}>
+                      {
+                        this.props.productColors.filter((bc, bi) => bi >= ai && bi < ai + numPerRow).map((cc, ci) => {
+                          return (
+                            <TouchableOpacity 
+                              key={'color_' + ci.toString()} 
+                              style={[styles.button, styles.commonRow, this.props.productSelectedColorIndex == (ai + ci) ? styles.selectedButton : null]}
+                              onPress={() => this.props.onChangeProductSelectedColorIndex(ai + ci)}
+                            >
+                              <Text style={[this.props.productSelectedColorIndex == (ai + ci) ? styles.selectedButtonText : styles.buttonText]}>{cc}</Text>
+                            </TouchableOpacity>
+                          )
+                        })
+                      }
+                    </View>
+                  )
+                }
+              })
+            }
           </View>
         </View>
       </Modal>
