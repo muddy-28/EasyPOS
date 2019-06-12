@@ -60,7 +60,7 @@ class MainScreen extends Component {
       shoppingCart: [],
       // add discount dialog
       calcMethodSelectedIndex: 0,
-      displayNumber: 0,
+      overAllDiscount: 0,
       selectedFuncIndex: -1,
       selectedNumIndex: -1,
       // add product dialog
@@ -74,9 +74,18 @@ class MainScreen extends Component {
     }
   }
 
-  componentWillMount() {
-    this.props.getInventories(this.props.user.auth_token);
-    this.props.getCategories(this.props.user.auth_token);
+  async componentWillMount() {
+    const user = this.props.user;
+
+    await this.props.getInventories(user.auth_token, user.companies[0].id);
+    await this.props.getCategories(user.auth_token);
+    await this.props.getTaxes(user.auth_token);
+    await this.props.getDiscounts(user.auth_token);
+  }
+
+  getProductDiscount(id) {
+    const discounts = this.props.discounts.filter(d => d.inventory_id == id);
+    return discounts.length > 0 && discounts[0].on_off ? parseFloat(discounts[0].discount_value) : 0;
   }
 
   showOneModal(name) {
@@ -105,6 +114,28 @@ class MainScreen extends Component {
     if (inventories.length == 0) return;
 
     this.showOneModal('addProduct');
+    this.setState({productNumber: 1, productSelectedSizeIndex: 1, productSelectedColorIndex: 1})
+  }
+
+  addProduct() {
+    this.setState({showAddProductModal: false});
+
+    let shoppingCart = this.state.shoppingCart;
+
+    let existIndex = -1;
+    shoppingCart.forEach((sc, i) => {
+      if (this.state.selectedProductId == sc.productId) existIndex = i;
+    });
+
+    if (existIndex == -1) {
+      shoppingCart.push({productId: this.state.selectedProductId, redNum: this.state.productNumber, sizeIndex: this.state.productSelectedSizeIndex, colorIndex: this.state.productSelectedColorIndex});
+    } else {
+      let exist = shoppingCart[existIndex];
+      exist.redNum += this.state.productNumber;
+      shoppingCart[existIndex] = exist;
+    }
+
+    this.setState({shoppingCart});
   }
 
   renderHeader() {
@@ -121,7 +152,7 @@ class MainScreen extends Component {
         onChangeSearchText={(productSearchString) => this.setState({productSearchString})}
         onClearSearchText={()=>this.setState({searchSelected: false, productSearchString: ''})}
         onClickAddProduct={() => this.onClickAddProduct()}
-        cartNum={0}
+        cartNum={this.state.shoppingCart.length}
       />
     );
   }
@@ -204,24 +235,22 @@ class MainScreen extends Component {
           {this.renderCustomer()}
           {this.renderCashiers()}
           {this.renderCalc()}
-          <TouchableOpacity onPress={() => this.setState({showPaymentModal: true})} style={[styles.chargeButton]}>
-            <Text style={styles.chargeText}>Charge</Text>
-            <Text style={styles.priceText}>$0.00</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
     );
   }
 
   renderCustomer() {
+    const user = this.props.user;
+
     return (
       <View style={[styles.commonPart, styles.customerPart]}>
         <View style={styles.customerContainer}>
           <Image source={Images.customer} resizeMode='cover' style={styles.customerImage} />
           <View>
-            <Text style={styles.customerName}>Hoang Thai</Text>
-            <Text style={styles.customerPhone}>+84 0905 070 017</Text>
-            <Text style={styles.customerEmail}>{this.props.user.email}</Text>
+            <Text style={styles.customerName}>{user.first_name + " " + user.last_name}</Text>
+            <Text style={styles.customerPhone}>{user.phone_number}</Text>
+            <Text style={styles.customerEmail}>{user.email}</Text>
           </View>
         </View>
         <TouchableOpacity style={styles.iconContainer}>
@@ -233,43 +262,70 @@ class MainScreen extends Component {
 
   renderCashiers() {
     return (
-      <View style={[styles.commonPart, styles.cashiersPart]}>
-        {/* {this.state.cashiers.filter(c => c.customerId == this.state.customerSelectedId).map((c, index) => {
+      <ScrollView style={[styles.commonPart, styles.cashiersPart]}>
+        {this.state.shoppingCart.map((sc, index) => {
+          const product = this.props.inventories.filter(inv => inv.id == sc.productId)[0];
+          const discounts = this.props.discounts.filter(d => d.inventory_id == product.id);
+          const discount = discounts.length > 0 && discounts[0].on_off ? parseFloat(discounts[0].discount_value) : 0;
+
           return (
             <View key={'cashier_' + index.toString()} style={styles.cashierRow}>
               <View style={styles.cashierImageContainer}>
-                <Image source={Images.product} resizeMode="cover" style={styles.cashierImage} />
-                {c.redNum > 1 ? <View style={styles.cashierRedNumContainer}><Text style={styles.cashierRedNum}>{c.redNum}</Text></View> : null}
+                <Image source={product.image && product.image.url ? {uri: product.image.url} : Images.product} resizeMode="cover" style={styles.cashierImage} />
+                {sc.redNum > 1 ? <View style={styles.cashierRedNumContainer}><Text style={styles.cashierRedNum}>{sc.redNum}</Text></View> : null}
               </View>
-              <View style={[styles.cashierRightContainer, index == this.state.cashiers.filter(c => c.customerId == this.state.customerSelectedId).length - 1 ? styles.cashierLastRightContainer : null]}>
+              <View 
+                style={[styles.cashierRightContainer, index == this.state.shoppingCart.length - 1 ? styles.cashierLastRightContainer : null]}
+              >
                 <View style={styles.cashierInfoContainer}>
-                  <Text style={styles.cashierName}>{c.name}</Text>
-                  <Text style={styles.cashierDescription}>{c.description}</Text>
+                  <Text style={styles.cashierName}>{product.title}</Text>
+                  <Text style={styles.cashierDescription}>{product.description_of_item}</Text>
                 </View>
-                <Text style={styles.cashierPrice}>{c.price}</Text>
+                <Text style={styles.cashierPrice}>{'$' + (parseFloat(product.price) * sc.redNum * (1 - discount / 100)).toFixed(2)}</Text>
               </View>
             </View>
           );
-        })} */}
-      </View>
+        })}
+      </ScrollView>
     );
   }
 
   renderCalc() {
+    let subTotal = 0;
+    let tax = 0;
+
+    let taxes = this.props.taxes.filter((t) => t.company_id == this.props.user.companies[0].id);
+    if (taxes.length > 0) {
+      tax = parseFloat(taxes[0].tax_value);
+    }
+
+    this.state.shoppingCart.forEach((sc) => {
+      const product = this.props.inventories.filter(inv => inv.id == sc.productId)[0];
+      const discount = this.getProductDiscount(product.id);
+      subTotal += parseFloat(product.price) * sc.redNum * (1 - discount / 100);
+    })
+    
     return (
-      <View style={[styles.commonPart, styles.calcPart]}>
-        <TouchableOpacity onPress={() => this.setState({showAddDiscountModal: true})} style={[styles.calcRow, styles.calcTitleRow]}>
-          <Text style={styles.calcTitle}>Add Discount</Text>
-          <View style={styles.iconContainer}><Icon name='plus-circle-outline' size={24} color={Colors.mainColor} /></View>
+      <View>
+        <View style={[styles.commonPart, styles.calcPart]}>
+          <TouchableOpacity onPress={() => this.setState({showAddDiscountModal: true})} style={[styles.calcRow, styles.calcTitleRow]}>
+            <Text style={styles.calcTitle}>Add Discount</Text>
+            <View style={styles.iconContainer}><Icon name='plus-circle-outline' size={24} color={Colors.mainColor} /></View>
+          </TouchableOpacity>
+          <View style={[styles.calcRow]}>
+            <Text style={styles.calcText}>Subtotal</Text>
+            <Text style={styles.calcText}>{'$' + subTotal.toFixed(2)}</Text>
+          </View>
+          <View style={[styles.calcRow]}>
+            <Text style={styles.calcText}>Taxes ({tax.toFixed(0)}%)</Text>
+            <Text style={styles.calcText}>${(subTotal * tax / 100).toFixed(2)}</Text>
+          </View>
+        </View>
+
+        <TouchableOpacity onPress={() => this.setState({showPaymentModal: true})} style={[styles.chargeButton]}>
+          <Text style={styles.chargeText}>Charge</Text>
+          <Text style={styles.priceText}>${(subTotal * (1 + tax / 100)).toFixed(2)}</Text>
         </TouchableOpacity>
-        <View style={[styles.calcRow]}>
-          <Text style={styles.calcText}>Subtotal</Text>
-          <Text style={styles.calcText}>$0.00</Text>
-        </View>
-        <View style={[styles.calcRow]}>
-          <Text style={styles.calcText}>Taxes (0%)</Text>
-          <Text style={styles.calcText}>$0.00</Text>
-        </View>
       </View>
     );
   }
@@ -297,10 +353,10 @@ class MainScreen extends Component {
         onClose={() => this.setState({showAddDiscountModal: false})}
         selectedTabIndex={this.state.calcMethodSelectedIndex}
         onChangeTabIndex={(index) => this.setState({calcMethodSelectedIndex: index})}
-        displayNumber={this.state.displayNumber}
+        overAllDiscount={this.state.overAllDiscount}
         selectedFuncIndex={this.state.selectedFuncIndex}
         onChangeFuncIndex={(index) => this.setState({selectedFuncIndex: index})}
-        onClearDisplay={() => this.setState({selectedFuncIndex: -1, displayNumber: 0})}
+        onClearDisplay={() => this.setState({selectedFuncIndex: -1, overAllDiscount: 0})}
         onChangeNumIndex={(index) => this.setState({selectedNumIndex: index})}
         onCalcNums={() => this.setState()}
       />
@@ -311,17 +367,19 @@ class MainScreen extends Component {
     if (!this.state.showAddProductModal) return;
 
     const product = this.props.inventories.filter(inv => inv.id == this.state.selectedProductId)[0];
+    const discount = this.getProductDiscount(product.id);
 
     return (
       <ModalAddProduct
         visible={this.state.showAddProductModal}
         onClose={() => this.setState({showAddProductModal: false})}
+        onClickAdd={() => this.addProduct()}
         productNumber={this.state.productNumber}
         onProcProductNumber={(st) => this.setState({productNumber: this.state.productNumber + st})}
         productSizes={this.state.productSizes}
         productColors={this.state.productColors}
         productAvailableNumber={product.sub_quantity}
-        productPrice={parseFloat(product.price) * this.state.productNumber}
+        productPrice={parseFloat(product.price) * this.state.productNumber * (1 - discount / 100)}
         productSelectedSizeIndex={this.state.productSelectedSizeIndex}
         productSelectedColorIndex={this.state.productSelectedColorIndex}
         onChangeProductSelectedSizeIndex={(index) => this.setState({productSelectedSizeIndex: index})}
@@ -405,13 +463,17 @@ const mapStateToProps = ({ pos }) => {
     user: pos.user,
     inventories: pos.inventories,
     categories: pos.categories,
+    taxes: pos.taxes,
+    discounts: pos.discounts,
   }
 }
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    getInventories: (token) => dispatch(PosAction.getInventories(token)),
+    getInventories: (token, company_id) => dispatch(PosAction.getInventories(token, company_id)),
     getCategories: (token) => dispatch(PosAction.getCategories(token)),
+    getTaxes: (token) => dispatch(PosAction.getTaxes(token)),
+    getDiscounts: (token) => dispatch(PosAction.getDiscounts(token)),
   }
 }
 

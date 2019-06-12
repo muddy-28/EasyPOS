@@ -70,9 +70,11 @@ const pos = (baseURL = config.serverUrl) => {
     timeout: 60000
   })
 
-  const login = (param) => api.post('/users/signin', param)
-  const getInventories = (token) => api.get('/inventories', null, { headers: {'Authorization': token} })
-  const getCategories = (token) => api.get('/categories', null, { headers: {'Authorization': token} })
+  const login = (param) => api.post('/company_users/signin', param)
+  const getInventories = (token, company_id) => api.get(`/companies/${company_id}/inventory_list`, null, { headers: {'ACCESS_TOKEN': token} })
+  const getCategories = (token) => api.get('/categories', null, { headers: {'ACCESS_TOKEN': token} })
+  const getTaxes = (token) => api.get('/taxes', null, { headers: { 'ACCESS_TOKEN': token } })
+  const getDiscounts = (token) => api.get('/discounts', null, { headers: { 'ACCESS_TOKEN': token } })
   // const update = (token, id, param) => api.patch(`users/${id}/`, param, { headers: {'Authorization': token} })
   // const forgotPassword = (param) => api.post('users/forgot_password', param)
 
@@ -80,6 +82,8 @@ const pos = (baseURL = config.serverUrl) => {
     login,
     getInventories,
     getCategories,
+    getTaxes,
+    getDiscounts,
   }
 }
 

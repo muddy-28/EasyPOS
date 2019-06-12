@@ -9,10 +9,14 @@ const { Types, Creators } = createActions({
   posFailure: null,
   loginRequest: ['email', 'password'],
   loginSuccess: ['user'],
-  getInventories: ['token'],
+  getInventories: ['token', 'company_id'],
   setInventories: ['inventories'],
   getCategories: ['token'],
   setCategories: ['categories'],
+  getTaxes: ['token'],
+  setTaxes: ['taxes'],
+  getDiscounts: ['token'],
+  setDiscounts: ['discounts'],
 })
 
 export const PosTypes = Types
@@ -28,6 +32,8 @@ export const INITIAL_STATE = Immutable({
   user: {},
   inventories: [],
   categories: [],
+  taxes: [],
+  discounts: [],
 })
 
 /* ------------- Selectors ------------- */
@@ -56,11 +62,17 @@ export const failure = state =>
 export const loginSuccess = (state, { user }) => 
   state.merge({ fetching: false, user: user.user, error: null })
 
-  export const setInventories = (state, { inventories }) => 
+export const setInventories = (state, { inventories }) => 
   state.merge({ fetching: false, inventories: inventories.inventories, error: null })
 
-  export const setCategories = (state, { categories }) => 
+export const setCategories = (state, { categories }) => 
   state.merge({ fetching: false, categories: categories.categories, error: null })
+
+export const setTaxes = (state, { taxes }) => 
+  state.merge({ fetching: false, taxes: taxes.taxes, error: null })
+
+export const setDiscounts = (state, { discounts }) => 
+  state.merge({ fetching: false, discounts: discounts.discounts, error: null })
 
 /* ------------- Hookup Reducers To Types ------------- */
 
@@ -74,4 +86,8 @@ export const reducer = createReducer(INITIAL_STATE, {
   [Types.SET_INVENTORIES]: setInventories,
   [Types.GET_CATEGORIES]: request,
   [Types.SET_CATEGORIES]: setCategories,
+  [Types.GET_TAXES]: request,
+  [Types.SET_TAXES]: setTaxes,
+  [Types.GET_DISCOUNTS]: request,
+  [Types.SET_DISCOUNTS]: setDiscounts,
 })

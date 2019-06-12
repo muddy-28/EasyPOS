@@ -16,6 +16,7 @@ export default class ModalAddProduct extends Component {
     productSelectedSizeIndex: PropTypes.number,
     productSelectedColorIndex: PropTypes.number,
     onClose: PropTypes.func,
+    onClickAdd: PropTypes.func,
     onProcProductNumber: PropTypes.func,
     onChangeProductSelectedSizeIndex: PropTypes.func,
     onChangeProductSelectedColorIndex: PropTypes.func,
@@ -31,7 +32,7 @@ export default class ModalAddProduct extends Component {
             <View style={[styles.titleRow, styles.borderRow]}>
               <TouchableOpacity onPress={() => this.props.onClose()}><CustomIcon name="black_close" /></TouchableOpacity>
               <Text style={styles.title}>Add: Product 1</Text>
-              <TouchableOpacity onPress={() => this.props.onClose()}><CustomIcon name="black_add" /></TouchableOpacity>
+              <TouchableOpacity onPress={() => this.props.onClickAdd()}><CustomIcon name="black_add" /></TouchableOpacity>
             </View>
             <View style={[styles.commonRow, styles.secondRow, styles.borderRow]}>
               <TouchableOpacity 
