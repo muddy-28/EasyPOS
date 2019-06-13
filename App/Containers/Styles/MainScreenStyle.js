@@ -180,7 +180,7 @@ export default StyleSheet.create({
   },
   chargeButton: {
     marginHorizontal: 16,
-    marginTop: 140,
+    marginTop: 90,
     marginBottom: 38,
     backgroundColor: Colors.mainColor,
     borderRadius: 4,
