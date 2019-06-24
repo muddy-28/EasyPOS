@@ -14,24 +14,29 @@ import OrderCard from '../Components/OrderCard';
 // import ModalCustomers from '../Components/ModalCustomers';
 import ModalCategories from '../Components/ModalCategories';
 import ModalAddDiscount from '../Components/ModalAddDiscount';
-import ModalAddProduct from '../Components/ModalAddProduct';
+import ModalAddCart from '../Components/ModalAddCart';
+import ModalAddInventory from '../Components/ModalAddInventory';
 import ModalCharge from '../Components/ModalCharge';
 import ModalAlert from '../Components/ModalAlert';
 import ModalConfirm from '../Components/ModalConfirm';
 import ModalPayment from '../Components/ModalPayment';
 import { hexToRgba } from '../Lib/helpers';
 
+const companyIndex = 5
+
 class MainScreen extends Component {
   constructor (props) {
     super(props)
+
     this.state = {
       showCategoriesModal: false,
       showAddDiscountModal: false,
-      showAddProductModal: false,
+      showAddCartModal: false,
       showChargeModal: false,
       showAlertModal: false,
       showConfirmModal: false,
       showPaymentModal: false,
+      showAddInventoryModal: false,
       productSelected: true,
       productsListSelected: false,
       searchSelected: false,
@@ -58,68 +63,93 @@ class MainScreen extends Component {
       selectedCategoryId: -1,
       selectedProductId: -1,
       shoppingCart: [],
+      totalPrice: 0,
+      subTotalPrice: 0,
+      taxPrice: 0,
+      overAllDiscountPrice: 0,
       // add discount dialog
       selectedDiscountMethodIndex: 0,
-      overAllDiscount: 10,
-      selectedFuncIndex: -1,
-      selectedNumIndex: -1,
-      // add product dialog
+      overAllDiscount: 0,
+      // add cart dialog
       productNumber: 1,
       productSizes: ['S', 'M', 'X', 'L', 'XL', 'XXL'],
       productColors: ['Red', 'Green', 'Blue', 'White', 'Yellow', 'Orange', 'Violet', 'Purple', 'Brown', 'Black', 'Gold', 'Silver'],
       selectedProductSizeIndex: 1,
       selectedProductColorIndex: 1,
       // payment dialog
-      paymentMethodSelectedIndex: 0,
+      paymentMethodSelectedIndex: 1,
     }
   }
 
-  async componentWillMount() {
-    const user = this.props.user;
-
-    await this.props.getInventories(user.auth_token, user.companies[0].id);
-    await this.props.getCategories(user.auth_token);
-    await this.props.getTaxes(user.auth_token);
-    await this.props.getDiscounts(user.auth_token);
+  componentWillMount() {
+    this.props.getInventories(this.props.user.auth_token, this.props.user.companies[companyIndex].id);
+    this.props.getCategories(this.props.user.auth_token);
+    this.props.getTaxes(this.props.user.auth_token);
+    this.props.getDiscounts(this.props.user.auth_token);
   }
 
-  getProductDiscount(id) {
-    const discounts = this.props.discounts.filter(d => d.inventory_id == id);
-    return discounts.length > 0 && discounts[0].on_off == '1' ? parseFloat(discounts[0].discount_value) : 0;
-  }
+  doPay(card_type, card_number, card_exp, card_cvv, card_amount) {
+    this.setState({showPaymentModal: false});
 
-  showOneModal(name) {
-    this.setState({
-      showCategoriesModal: name == 'category',
-      showAddDiscountModal: name == 'addDiscount',
-      showAddProductModal: name == 'addProduct',
-      showAlertModal: name == 'alert',
-      showChargeModal: name == 'charge',
-      showConfirmModal: name == 'confirm',
-      showPaymentModal: name == 'payment',
-    });
-  }
-
-  onClickExpand() {
-    this.showOneModal('category');
-    this.setState({
-      productSelected: true,
+    let inventories = [];
+    this.state.shoppingCart.forEach((sc) => {
+      inventories.push({id: sc.productId, quantity: sc.redNum});
     })
+
+    let params = { 
+      company_id: this.props.user.companies[companyIndex].id,
+      inventories,
+      register_id: 1,
+      value: this.state.subTotalPrice.toFixed(2),
+      tax_value: this.state.taxPrice.toFixed(2),
+      discount_value: this.state.overAllDiscount.toFixed(2),
+      transaction_total: this.state.totalPrice.toFixed(2),
+      transaction_type: "test",
+      "publisher-name": "pnpdemo",
+      // "card-number": card_number,
+      "card-number": "3566000020000410",
+      "card-name": card_type,
+      "card-amount": card_amount,
+      "card-exp": card_exp,
+      "card-cvv": card_cvv,
+    }
+
+    this.props.postTransactions(this.props.user.auth_token, params);
   }
 
-  onClickAddProduct() {
-    if (this.props.inventories.length == 0 || this.state.selectedProductId == -1) return;
-
-    const inventories = this.props.inventories.filter((inv) => (this.state.selectedCategoryId == -1 ? true : inv.category_id == this.state.selectedCategoryId) && inv.id == this.state.selectedProductId && (inv.title.toLowerCase().indexOf(this.state.productSearchString.toLowerCase()) != -1));
-    if (inventories.length == 0) return;
-
-    this.showOneModal('addProduct');
-    this.setState({productNumber: 1, selectedProductSizeIndex: 1, selectedProductColorIndex: 1})
+  getTax() {
+    let tax = 0;
+    let taxes = this.props.taxes.filter((t) => t.company_id == this.props.user.companies[companyIndex].id);
+    if (taxes.length > 0) {
+      tax = parseFloat(taxes[0].tax_value);
+    }
+    return tax;
   }
 
-  addProduct() {
-    this.setState({showAddProductModal: false});
+  calcTotalPrice() {
+    let subTotalPrice = 0;
+    let tax = this.getTax();
 
+    this.state.shoppingCart.forEach((sc) => {
+      const product = this.props.inventories.filter(inv => inv.id == sc.productId)[0];
+      const discount = this.getProductDiscount(product.id);
+      subTotalPrice += parseFloat(product.price) * sc.redNum * (1 - discount / 100);
+    })
+
+    let overAllDiscountPrice = (this.state.selectedDiscountMethodIndex == 0) ? subTotalPrice * this.state.overAllDiscount / 100 : this.state.overAllDiscount;
+    let specialPrice = subTotalPrice - overAllDiscountPrice > 0 ? subTotalPrice - overAllDiscountPrice : 0;
+    let taxPrice = specialPrice * tax / 100;
+    let totalPrice = specialPrice - taxPrice;
+
+    this.setState({overAllDiscountPrice, taxPrice, totalPrice, subTotalPrice});
+  }
+
+  async setDiscount(tabIndex, num) {
+    await this.setState({selectedDiscountMethodIndex: tabIndex, overAllDiscount: parseFloat(num), showAddDiscountModal: false});
+    this.calcTotalPrice();
+  }
+
+  addCart() {
     let shoppingCart = this.state.shoppingCart;
 
     let existIndex = -1;
@@ -135,7 +165,51 @@ class MainScreen extends Component {
       shoppingCart[existIndex] = exist;
     }
 
-    this.setState({shoppingCart});
+    this.setState({showAddCartModal: false, shoppingCart});
+    this.calcTotalPrice();
+  }
+
+  addInventory() {
+    this.setState({showAddInventoryModal: false});
+  }
+
+  getProductDiscount(id) {
+    const discounts = this.props.discounts.filter(d => d.inventory_id == id);
+    return discounts.length > 0 && discounts[0].on_off == '1' ? parseFloat(discounts[0].discount_value) : 0;
+  }
+
+  showOneModal(name) {
+    this.setState({
+      showCategoriesModal: name == 'category',
+      showAddDiscountModal: name == 'addDiscount',
+      showAddCartModal: name == 'addCart',
+      showAlertModal: name == 'alert',
+      showChargeModal: name == 'charge',
+      showConfirmModal: name == 'confirm',
+      showPaymentModal: name == 'payment',
+      showAddInventoryModal: name == 'addInventory',
+    });
+  }
+
+  onClickExpand() {
+    this.showOneModal('category');
+    this.setState({
+      productSelected: true,
+    })
+  }
+
+  onClickAddCart() {
+    if (this.props.inventories.length == 0 || this.state.selectedProductId == -1) return;
+
+    const inventories = this.props.inventories.filter((inv) => (this.state.selectedCategoryId == -1 ? true : inv.category_id == this.state.selectedCategoryId) && inv.id == this.state.selectedProductId && (inv.title.toLowerCase().indexOf(this.state.productSearchString.toLowerCase()) != -1));
+    if (inventories.length == 0) return;
+
+    this.showOneModal('addCart');
+    this.setState({productNumber: 1, selectedProductSizeIndex: 1, selectedProductColorIndex: 1})
+  }
+
+  onClickAddInventory() {
+    this.showOneModal('addInventory');
   }
 
   renderHeader() {
@@ -151,7 +225,8 @@ class MainScreen extends Component {
         onClickList={() => this.setState({productsListSelected: !this.state.productsListSelected})}
         onChangeSearchText={(productSearchString) => this.setState({productSearchString})}
         onClearSearchText={()=>this.setState({searchSelected: false, productSearchString: ''})}
-        onClickAddProduct={() => this.onClickAddProduct()}
+        onClickAddCart={() => this.onClickAddCart()}
+        onClickAddInventory={() => this.onClickAddInventory()}
         cartNum={this.state.shoppingCart.length}
       />
     );
@@ -290,23 +365,8 @@ class MainScreen extends Component {
   }
 
   renderCalc() {
-    let subTotal = 0;
-    let tax = 0;
+    let tax = this.getTax();
 
-    let taxes = this.props.taxes.filter((t) => t.company_id == this.props.user.companies[0].id);
-    if (taxes.length > 0) {
-      tax = parseFloat(taxes[0].tax_value);
-    }
-
-    this.state.shoppingCart.forEach((sc) => {
-      const product = this.props.inventories.filter(inv => inv.id == sc.productId)[0];
-      const discount = this.getProductDiscount(product.id);
-      subTotal += parseFloat(product.price) * sc.redNum * (1 - discount / 100);
-    })
-
-    let overAllDiscount = (this.state.selectedDiscountMethodIndex == 0) ? subTotal * this.state.overAllDiscount / 100 : this.state.overAllDiscount;
-    let specialPrice = subTotal - overAllDiscount;
-    
     return (
       <View>
         <View style={[styles.commonPart, styles.calcPart]}>
@@ -317,21 +377,21 @@ class MainScreen extends Component {
           </TouchableOpacity>
           <View style={[styles.calcRow]}>
             <Text style={styles.calcText}>Subtotal</Text>
-            <Text style={styles.calcText}>{'$' + subTotal.toFixed(2)}</Text>
+            <Text style={styles.calcText}>{'$' + this.state.subTotalPrice.toFixed(2)}</Text>
           </View>
           <View style={[styles.calcRow]}>
-            <Text style={styles.calcText}>Discount ({this.state.selectedDiscountMethodIndex == 0 ? this.state.overAllDiscount.toFixed(0) + "%" : "$" + this.state.overAllDiscount.toFixed(2)})</Text>
-            <Text style={styles.calcText}>{'$' + overAllDiscount.toFixed(2)}</Text>
+            <Text style={styles.calcText}>Discount{this.state.selectedDiscountMethodIndex == 0 ? " (" + this.state.overAllDiscount.toFixed(0) + "%)" : null}</Text>
+            <Text style={styles.calcText}>{'$' + this.state.overAllDiscountPrice.toFixed(2)}</Text>
           </View>
           <View style={[styles.calcRow]}>
             <Text style={styles.calcText}>Taxes ({tax.toFixed(0)}%)</Text>
-            <Text style={styles.calcText}>${(specialPrice * tax / 100).toFixed(2)}</Text>
+            <Text style={styles.calcText}>{'$' + this.state.taxPrice.toFixed(2)}</Text>
           </View>
         </View>
 
         <TouchableOpacity onPress={() => this.setState({showPaymentModal: true})} style={[styles.chargeButton]}>
           <Text style={styles.chargeText}>Charge</Text>
-          <Text style={styles.priceText}>${(specialPrice * (1 + tax / 100)).toFixed(2)}</Text>
+          <Text style={styles.priceText}>${this.state.totalPrice.toFixed(2)}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -359,28 +419,23 @@ class MainScreen extends Component {
         visible={this.state.showAddDiscountModal}
         onClose={() => this.setState({showAddDiscountModal: false})}
         selectedTabIndex={this.state.selectedDiscountMethodIndex}
-        onChangeTabIndex={(index) => this.setState({selectedDiscountMethodIndex: index})}
-        overAllDiscount={this.state.overAllDiscount}
-        selectedFuncIndex={this.state.selectedFuncIndex}
-        onChangeFuncIndex={(index) => this.setState({selectedFuncIndex: index})}
-        onClearDisplay={() => this.setState({selectedFuncIndex: -1, overAllDiscount: 0})}
-        onChangeNumIndex={(index) => this.setState({selectedNumIndex: index})}
-        onCalcNums={() => this.setState()}
+        displayNumber={this.state.overAllDiscount}
+        onEnter={(tabIndex, num) => this.setDiscount(tabIndex, num)}
       />
     );
   }
 
-  renderAddProductModal() {
-    if (!this.state.showAddProductModal) return;
+  renderAddCartModal() {
+    if (!this.state.showAddCartModal) return;
 
     const product = this.props.inventories.filter(inv => inv.id == this.state.selectedProductId)[0];
     const discount = this.getProductDiscount(product.id);
 
     return (
-      <ModalAddProduct
-        visible={this.state.showAddProductModal}
-        onClose={() => this.setState({showAddProductModal: false})}
-        onClickAdd={() => this.addProduct()}
+      <ModalAddCart
+        visible={this.state.showAddCartModal}
+        onClose={() => this.setState({showAddCartModal: false})}
+        onClickAdd={() => this.addCart()}
         productNumber={this.state.productNumber}
         onProcProductNumber={(st) => this.setState({productNumber: this.state.productNumber + st})}
         productSizes={this.state.productSizes}
@@ -395,14 +450,28 @@ class MainScreen extends Component {
     );
   }
 
+  renderAddInventoryModal() {
+    if (!this.state.showAddInventoryModal) return;
+
+    return (
+      <ModalAddInventory
+        visible={this.state.showAddInventoryModal}
+        onClose={() => this.setState({showAddInventoryModal: false})}
+        onClickAdd={() => this.addInventory()}
+      />
+    );
+  }
+
   renderPaymentModal() {
     return (
       <ModalPayment
         visible={this.state.showPaymentModal}
+        totalPrice={this.state.totalPrice}
         onClose={() => this.setState({showPaymentModal: false})}
         selectedTabIndex={this.state.paymentMethodSelectedIndex}
         onChangeTabIndex={(index) => this.setState({paymentMethodSelectedIndex: index})}
         onClickTender={() => this.setState({showPaymentModal: false, showChargeModal: true})}
+        onClickPay={(card_type, card_number, card_exp, card_cvv, card_amount) => this.doPay(card_type, card_number, card_exp, card_cvv, card_amount)}
       />
     );
   }
@@ -449,11 +518,12 @@ class MainScreen extends Component {
         {/* {this.renderCustomersModal()} */}
         {this.renderCategoriesModal()}
         {this.renderAddDiscountModal()}
-        {this.renderAddProductModal()}
+        {this.renderAddCartModal()}
         {this.renderPaymentModal()}
         {this.renderChargeModal()}
         {this.renderAlertModal()}
         {this.renderConfirmModal()}
+        {this.renderAddInventoryModal()}
         <View style={styles.bodyContainer}>
           {this.renderLeftPanel()}
           {this.renderRightPanel()}
@@ -481,6 +551,7 @@ const mapDispatchToProps = (dispatch) => {
     getCategories: (token) => dispatch(PosAction.getCategories(token)),
     getTaxes: (token) => dispatch(PosAction.getTaxes(token)),
     getDiscounts: (token) => dispatch(PosAction.getDiscounts(token)),
+    postTransactions: (token, params) => dispatch(PosAction.postTransactions(token, params)),
   }
 }
 

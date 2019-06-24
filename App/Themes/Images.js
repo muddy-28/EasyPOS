@@ -26,6 +26,8 @@ const images = {
   tailUp: require('../Images/tailUp.png'),
   qr: require('../Images/qr.png'),
   avatar: require('../Images/avatar.png'),
+  exp: require('../Images/exp.png'),
+  cvv: require('../Images/cvv.png'),
 }
 
 export default images

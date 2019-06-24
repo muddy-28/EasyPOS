@@ -19,7 +19,8 @@ export default class HeaderMain extends Component {
     onChangeSearchText: PropTypes.func,
     onClearSearchText: PropTypes.func,
     cartNum: PropTypes.number,
-    onClickAddProduct: PropTypes.func,
+    onClickAddCart: PropTypes.func,
+    onClickAddInventory: PropTypes.func,
     onClickList: PropTypes.func,
   }
 
@@ -68,6 +69,11 @@ export default class HeaderMain extends Component {
           </View>
           <View style={[styles.buttonsContainer, styles.rightButtons]}>
             {this.props.searchSelected ? this.renderSearchTextBox() : this.renderSearchIcon()}
+            {this.props.productSelected ? 
+              <TouchableOpacity onPress={() => this.props.onClickAddInventory()} style={[styles.buttonsContainer, styles.rightButtons]}>
+                <CustomIcon name="add" />
+              </TouchableOpacity>
+            : null}
           </View>
         </View>
         <View style={[styles.partContainer, styles.rightPart]}>
@@ -77,7 +83,7 @@ export default class HeaderMain extends Component {
           <View style={styles.rightTextContainer}>
             <Text style={styles.rightText}>Cart ({this.props.cartNum.toString()})</Text>
           </View>
-          <TouchableOpacity onPress={() => this.props.onClickAddProduct()} style={[styles.buttonsContainer, styles.rightButtons]}>
+          <TouchableOpacity onPress={() => this.props.onClickAddCart()} style={[styles.buttonsContainer, styles.rightButtons]}>
             <CustomIcon name="add" />
           </TouchableOpacity>
         </View>

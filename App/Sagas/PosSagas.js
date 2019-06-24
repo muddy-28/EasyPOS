@@ -78,3 +78,16 @@ export function * getDiscounts(api, action) {
   }
 }
 
+export function * postTransactions(api, action) {
+  const { token, params } = action
+
+  const response = yield call(api.postTransactions, token, {transaction: params})
+  console.log("post transaction", response)
+
+  if (response.ok) {
+    yield put(PosActions.posSuccess())
+  } else {
+    yield put(PosActions.posFailure())
+  }
+}
+

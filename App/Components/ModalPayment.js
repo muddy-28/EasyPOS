@@ -1,35 +1,111 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { View, Text, TouchableOpacity, TextInput, Modal } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, Modal, Image } from 'react-native'
 import SegmentedControlTab from 'react-native-segmented-control-tab'
+import QRCode from 'react-native-qrcode-svg'
 import styles from './Styles/ModalPaymentStyle'
 import CustomIcon from './CustomIcon'
-import { Colors } from '../Themes'
+import { Colors, Images, ApplicationStyles } from '../Themes'
+import { cc_format, ce_format } from '../Lib/helpers';
 
 export default class ModalPayment extends Component {
   static propTypes = {
     visible: PropTypes.bool,
+    // subPrice: PropTypes.number,
+    // overallDiscountPrice: PropTypes.number,
+    // taxPrice: PropTypes.number,
+    totalPrice: PropTypes.number,
     selectedTabIndex: PropTypes.number,
     onClose: PropTypes.func,
-    onChangeTabIndex: PropTypes.func,
     onClickTender: PropTypes.func,
+    onClickPay: PropTypes.func,
+  }
+
+  constructor(props) {
+    super(props)
+    this.state = {
+      card_number: '',
+      card_exp: '',
+      card_cvv: '',
+      card_amount: '',
+      card_type: 'master',
+      inputtingCardNumber: false,
+      inputtingCardExp: false,
+      inputtingCardCvv: false,
+      inputtingCardAmount: false,
+      cardNumberError: false,
+      cardExpError: false,
+      cardCvvError: false,
+      cardAmountError: false,
+    }
+  }
+
+  refreshState() {
+    this.setState({
+      card_number: '',
+      card_exp: '',
+      card_cvv: '',
+      card_amount: '',
+      card_type: 'master',
+      inputtingCardNumber: false,
+      inputtingCardExp: false,
+      inputtingCardCvv: false,
+      inputtingCardAmount: false,
+      cardNumberError: false,
+      cardExpError: false,
+      cardCvvError: false,
+      cardAmountError: false,
+    })
   }
 
   handleIndexChange = index => {
     this.props.onChangeTabIndex(index);
   };
 
+  onClose() {
+    this.refreshState();
+    this.props.onClose();
+  }
+
+  onClickTender() {
+    this.props.onClickTender();
+  }
+
+  onClickPay() {
+    this.props.onClickPay(this.state.card_type, this.state.card_number, this.state.card_exp, this.state.card_cvv, this.state.card_amount);
+    this.refreshState();
+  }
+
+  onChangeCardAmount(amount) {
+    this.setState({card_amount: amount});
+  }
+
+  onChangeCardNumber(number) {
+    let cn = cc_format(number);
+    this.setState({card_number: cn});
+  }
+
+  onChangeCardExp(exp) {
+    let ce = ce_format(exp);
+    this.setState({card_exp: ce});
+  }
+
+  onChangeCardCvv(cvv) {
+    let cc = cvv.length > 3 ? cvv.substring(0, 3) : cvv;
+    this.setState({card_cvv: cc});
+  }
+
   renderCash() {
     return (
       <View style={styles.secondRow}>
-        <View style={styles.buttonsRow}>
+        {/* <View style={styles.buttonsRow}>
           <View style={styles.dotButton}><Text style={styles.dotButtonText}>$152.00</Text></View>
           <View style={styles.dotButton}><Text style={styles.dotButtonText}>$155.00</Text></View>
           <View style={styles.dotButton}><Text style={styles.dotButtonText}>$200.00</Text></View>
-        </View>
+        </View> */}
         <View style={styles.cashDisplayBar}>
-          <Text style={styles.price}>$151.80</Text>
-          <TouchableOpacity onPress={() => this.props.onClickTender()} style={styles.tenderButton}>
+          <Text style={styles.price}>${this.props.totalPrice.toFixed(2)}</Text>
+          <TouchableOpacity onPress={() => this.onClickTender()} style={styles.tenderButton}>
             <Text style={styles.tenderButtonText}>TENDER</Text>
           </TouchableOpacity>
         </View>
@@ -38,18 +114,83 @@ export default class ModalPayment extends Component {
   }
 
   renderExternal() {
+    const payAvailable = (this.state.card_amount && this.state.card_number && this.state.card_exp && this.state.card_cvv && !this.state.cardAmountError && !this.state.cardNumberError && !this.state.cardExpError && !this.state.cardCvvError)
     return (
       <View style={styles.secondRow}>
         <View style={styles.buttonsRow}>
-          <View style={styles.dotButton}><Text style={styles.dotButtonText}>Master Card</Text></View>
-          <View style={styles.dotButton}><Text style={styles.dotButtonText}>Visa</Text></View>
-          <View style={styles.dotButton}><Text style={styles.dotButtonText}>NETS</Text></View>
+          <TouchableOpacity onPress={() => this.setState({card_type: 'master'})} style={[styles.dotButton, this.state.card_type == 'master' ? styles.selectedDotButton : null]}>
+            <Text style={[styles.dotButtonText, this.state.card_type == 'master' ? styles.selectedDotButtonText : null]}>Master Card</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => this.setState({card_type: 'visa'})} style={[styles.dotButton, this.state.card_type == 'visa' ? styles.selectedDotButton : null]}>
+            <Text style={[styles.dotButtonText, this.state.card_type == 'visa' ? styles.selectedDotButtonText : null]}>Visa</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => this.setState({card_type: 'nets'})} style={[styles.dotButton, this.state.card_type == 'nets' ? styles.selectedDotButton : null]}>
+            <Text style={[styles.dotButtonText, this.state.card_type == 'nets' ? styles.selectedDotButtonText : null]}>NETS</Text>
+          </TouchableOpacity>
         </View>
-        <View style={styles.externalDisplayBar}>
-          <TextInput style={styles.textInput} placeholder='Input price' placeholderTextColor={Colors.text2} value='$151.80' />
+        {/* <View style={styles.externalDisplayBar}>
+          <TextInput style={styles.textInput} placeholder='Input price' placeholderTextColor={Colors.text2} value='$151.80' editable={false} />
           <TextInput style={[styles.textInput, {fontSize: 14}]} placeholder='Input approved code' placeholderTextColor={Colors.text2} />
+        </View> */}
+        <View style={styles.commonRow}>
+          <TextInput 
+            style={[styles.textInput, styles.numberInput, this.state.inputtingCardAmount ? styles.selectedTextInput : null]} 
+            placeholder='Card Amount' 
+            placeholderTextColor={Colors.text2} 
+            value={this.state.card_amount} 
+            onChangeText={(amount) => this.onChangeCardAmount(amount)} 
+            onFocus={() => this.setState({inputtingCardAmount: true})}
+            onBlur={() => this.setState({inputtingCardAmount: false})}
+          />
         </View>
-        <TouchableOpacity style={styles.payButton}><Text style={styles.payButtonText}>PAY</Text></TouchableOpacity>
+        <View style={styles.commonRow}>
+          <TextInput 
+            style={[styles.textInput, styles.numberInput, this.state.inputtingCardNumber ? styles.selectedTextInput : null]} 
+            placeholder='Card Number' 
+            placeholderTextColor={Colors.text2} 
+            value={this.state.card_number} 
+            onChangeText={(number) => this.onChangeCardNumber(number)} 
+            onFocus={() => this.setState({inputtingCardNumber: true})}
+            onBlur={() => this.setState({inputtingCardNumber: false})}
+          />
+        </View>
+        <View style={[styles.commonRow]}>
+          <View style={styles.expCol}>
+            <Image source={Images.exp} style={styles.expImage} resizeMode='cover' />
+            <TextInput 
+              style={[styles.textInput, styles.expInput, this.state.inputtingCardExp ? styles.selectedTextInput : null]} 
+              placeholder='MM / YY' 
+              placeholderTextColor={Colors.text2} 
+              value={this.state.card_exp} 
+              onChangeText={(exp) => this.onChangeCardExp(exp)} 
+              onFocus={() => this.setState({inputtingCardExp: true})}
+              onBlur={() => this.setState({inputtingCardExp: false})}
+            />
+          </View>
+          <View style={styles.cvvCol}>
+            <Image source={Images.cvv} style={styles.cvvImage} resizeMode='cover' />
+            <TextInput 
+              style={[styles.textInput, styles.cvvInput, this.state.inputtingCardCvv ? styles.selectedTextInput : null]} 
+              value={this.state.card_cvv} 
+              onChangeText={(cvv) => this.onChangeCardCvv(cvv)} 
+              onFocus={() => this.setState({inputtingCardCvv: true})}
+              onBlur={() => this.setState({inputtingCardCvv: false})}
+              secureTextEntry={true} 
+            />
+          </View>
+        </View>
+        <TouchableOpacity style={[styles.payButton, payAvailable ? ApplicationStyles.shadow : null]} onPress={() => this.onClickPay()} disabled={!payAvailable}>
+          <Text style={[styles.payButtonText, payAvailable ? null : {color: '#dddddd'}]}>PAY</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  renderMobile() {
+    const data = {value: this.props.totalPrice, orderId: 3}
+    return (
+      <View>
+        <QRCode logo={Images.logo} value={JSON.stringify(data)} />
       </View>
     );
   }
@@ -60,13 +201,13 @@ export default class ModalPayment extends Component {
         <View style={styles.screenContainer}>
           <View style={styles.modal}>
             <View style={[styles.titleRow, styles.borderRow]}>
-              <TouchableOpacity onPress={() => this.props.onClose()}><CustomIcon name="black_close" /></TouchableOpacity>
-              <Text style={styles.title}>$ 151.80</Text>
+              <TouchableOpacity onPress={() => this.onClose()}><CustomIcon name="black_close" /></TouchableOpacity>
+              <Text style={styles.title}>${this.props.totalPrice.toFixed(2)}</Text>
               <TouchableOpacity><CustomIcon /></TouchableOpacity>
             </View>
             <View style={[styles.firstRow, styles.borderRow]}>
               <SegmentedControlTab
-                values={['Cash', 'External Terminal']}
+                values={['Cash', 'Credit / Debit', 'Mobile']}
                 selectedIndex={this.props.selectedTabIndex}
                 onTabPress={this.handleIndexChange}
                 borderRadius={4}
@@ -78,7 +219,7 @@ export default class ModalPayment extends Component {
                 activeTabTextStyle={styles.activeTabTextStyle}
               />
             </View>
-            {this.props.selectedTabIndex == 0 ? this.renderCash() : this.renderExternal()}
+            {this.props.selectedTabIndex == 0 ? this.renderCash() : this.props.selectedTabIndex == 1 ? this.renderExternal() : this.renderMobile()}
           </View>
         </View>
       </Modal>

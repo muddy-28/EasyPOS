@@ -75,6 +75,7 @@ const pos = (baseURL = config.serverUrl) => {
   const getCategories = (token) => api.get('/categories', null, { headers: {'ACCESS_TOKEN': token} })
   const getTaxes = (token) => api.get('/taxes', null, { headers: { 'ACCESS_TOKEN': token } })
   const getDiscounts = (token) => api.get('/discounts', null, { headers: { 'ACCESS_TOKEN': token } })
+  const postTransactions = (token, params) => api.post('/transactions', params, { headers: {'ACCESS_TOKEN': token } })
   // const update = (token, id, param) => api.patch(`users/${id}/`, param, { headers: {'Authorization': token} })
   // const forgotPassword = (param) => api.post('users/forgot_password', param)
 
@@ -84,6 +85,7 @@ const pos = (baseURL = config.serverUrl) => {
     getCategories,
     getTaxes,
     getDiscounts,
+    postTransactions,
   }
 }
 

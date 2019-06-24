@@ -17,6 +17,7 @@ const { Types, Creators } = createActions({
   setTaxes: ['taxes'],
   getDiscounts: ['token'],
   setDiscounts: ['discounts'],
+  postTransactions: ['token', 'params'],
 })
 
 export const PosTypes = Types
@@ -90,4 +91,5 @@ export const reducer = createReducer(INITIAL_STATE, {
   [Types.SET_TAXES]: setTaxes,
   [Types.GET_DISCOUNTS]: request,
   [Types.SET_DISCOUNTS]: setDiscounts,
+  [Types.POST_TRANSACTIONS]: request,
 })

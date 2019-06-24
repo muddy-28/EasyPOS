@@ -29,7 +29,7 @@ export default StyleSheet.create({
     borderBottomColor: Colors.border,
   },
   title: {
-    fontSize: 16,
+    fontSize: 20,
     color: Colors.text1,
   },
   firstRow: {
@@ -70,10 +70,11 @@ export default StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     marginTop: 16,
+    marginBottom: 8,
   },
   dotButton: {
     width: 126,
-    height: 62,
+    height: 40,
     borderRadius: 8,
     borderColor: Colors.mainColor,
     borderWidth: 1,
@@ -81,9 +82,15 @@ export default StyleSheet.create({
     alignItems: 'center',
     borderStyle: 'dashed',
   },
+  selectedDotButton: {
+    backgroundColor: Colors.mainColor,
+  },
   dotButtonText: {
     color: Colors.mainColor,
     fontSize: 20,
+  },
+  selectedDotButtonText: {
+    color: 'white',
   },
   cashDisplayBar: {
     margin: 16,
@@ -120,13 +127,16 @@ export default StyleSheet.create({
     alignItems: 'center',
   },
   textInput: {
-    width: 200,
-    height: 55,
+    height: 40,
     paddingHorizontal: 16,
     color: Colors.text1,
-    fontSize: 20,
+    fontSize: 18,
     backgroundColor: 'white',
     borderRadius: 8,
+  },
+  selectedTextInput: {
+    borderColor: Colors.mainColor,
+    borderWidth: 1,
   },
   payButton: {
     height: 55,
@@ -135,10 +145,53 @@ export default StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 6,
+    marginTop: 8,
     marginBottom: 16,
   },
   payButtonText: {
     fontSize: 20,
     color: 'white',
   },
+  commonRow: {
+    marginVertical: 8,
+    marginHorizontal: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  expCol: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cvvCol: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  numberInput: {
+    flex: 1,
+  },
+  expInput: {
+    width: 92,
+    marginHorizontal: 8,
+    paddingHorizontal: 10,
+  },
+  cvvInput: {
+    width: 92,
+    marginHorizontal: 8,
+  },
+  expImage: {
+    width: 30.5,
+    height: 20,
+    marginHorizontal: 8,
+  },
+  cvvImage: {
+    width: 37.4,
+    height: 10,
+    marginHorizontal: 8,
+  }
+
 })

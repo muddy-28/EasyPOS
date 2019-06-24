@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { View, Text, TouchableOpacity, Modal } from 'react-native'
-import styles from './Styles/ModalAddProductStyle'
+import styles from './Styles/ModalAddCartStyle'
 import CustomIcon from './CustomIcon'
 import { ApplicationStyles } from '../Themes';
 
-export default class ModalAddProduct extends Component {
+export default class ModalAddCart extends Component {
   static propTypes = {
     visible: PropTypes.bool,
     productSizes: PropTypes.array,
