@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { View, Text, TouchableOpacity, TextInput, Modal, Image } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, Modal, Image, ScrollView } from 'react-native'
 import SegmentedControlTab from 'react-native-segmented-control-tab'
 import QRCode from 'react-native-qrcode-svg'
 import styles from './Styles/ModalPaymentStyle'
@@ -198,30 +198,32 @@ export default class ModalPayment extends Component {
   render () {
     return (
       <Modal animationType="slide" transparent={true} visible={this.props.visible}>
-        <View style={styles.screenContainer}>
-          <View style={styles.modal}>
-            <View style={[styles.titleRow, styles.borderRow]}>
-              <TouchableOpacity onPress={() => this.onClose()}><CustomIcon name="black_close" /></TouchableOpacity>
-              <Text style={styles.title}>${this.props.totalPrice.toFixed(2)}</Text>
-              <TouchableOpacity><CustomIcon /></TouchableOpacity>
+        <ScrollView>
+          <View style={styles.screenContainer}>
+            <View style={styles.modal}>
+              <View style={[styles.titleRow, styles.borderRow]}>
+                <TouchableOpacity onPress={() => this.onClose()}><CustomIcon name="black_close" /></TouchableOpacity>
+                <Text style={styles.title}>${this.props.totalPrice.toFixed(2)}</Text>
+                <TouchableOpacity><CustomIcon /></TouchableOpacity>
+              </View>
+              <View style={[styles.firstRow, styles.borderRow]}>
+                <SegmentedControlTab
+                  values={['Cash', 'Credit / Debit', 'Mobile']}
+                  selectedIndex={this.props.selectedTabIndex}
+                  onTabPress={this.handleIndexChange}
+                  borderRadius={4}
+                  allowFontScaling={true}
+                  tabsContainerStyle={styles.tabsContainerStyle}
+                  tabStyle={styles.tabStyle}
+                  tabTextStyle={styles.tabTextStyle}
+                  activeTabStyle={styles.activeTabStyle}
+                  activeTabTextStyle={styles.activeTabTextStyle}
+                />
+              </View>
+              {this.props.selectedTabIndex == 0 ? this.renderCash() : this.props.selectedTabIndex == 1 ? this.renderExternal() : this.renderMobile()}
             </View>
-            <View style={[styles.firstRow, styles.borderRow]}>
-              <SegmentedControlTab
-                values={['Cash', 'Credit / Debit', 'Mobile']}
-                selectedIndex={this.props.selectedTabIndex}
-                onTabPress={this.handleIndexChange}
-                borderRadius={4}
-                allowFontScaling={true}
-                tabsContainerStyle={styles.tabsContainerStyle}
-                tabStyle={styles.tabStyle}
-                tabTextStyle={styles.tabTextStyle}
-                activeTabStyle={styles.activeTabStyle}
-                activeTabTextStyle={styles.activeTabTextStyle}
-              />
-            </View>
-            {this.props.selectedTabIndex == 0 ? this.renderCash() : this.props.selectedTabIndex == 1 ? this.renderExternal() : this.renderMobile()}
           </View>
-        </View>
+        </ScrollView>
       </Modal>
     )
   }
