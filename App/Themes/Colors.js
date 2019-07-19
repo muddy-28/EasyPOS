@@ -23,8 +23,6 @@ const colors = {
   text: '#E0D7E5',
   // mainColor: '#0cc579',
   mainColor: '#3B7A81',
-  darkMainColor: '#2c6970',
-  headerBorder: '#03b16a',
   border: '#d4d4d4',
   text1: '#4c4c4c',
   text2: '#a9a9a9',

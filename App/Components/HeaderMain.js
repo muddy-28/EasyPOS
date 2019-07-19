@@ -6,6 +6,7 @@ import { SearchBar } from 'react-native-elements'
 import styles from './Styles/HeaderMainStyle'
 import CustomIcon from './CustomIcon'
 import { Colors } from '../Themes'
+import { shadeColor } from '../Lib/helpers';
 
 export default class HeaderMain extends Component {
   static propTypes = {
@@ -52,7 +53,7 @@ export default class HeaderMain extends Component {
   render () {
     return (
       <View style={styles.container}>
-        <View style={[styles.partContainer, styles.leftPart]}>
+        <View style={[styles.partContainer, styles.leftPart, {borderColor: shadeColor(Colors.mainColor, -10)}]}>
           <View style={[styles.buttonsContainer, styles.leftButtons]}>
             <View style={styles.iconContainer}>
               <CustomIcon name="menu" />

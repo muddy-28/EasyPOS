@@ -6,6 +6,7 @@ import { connect } from 'react-redux'
 import styles from './Styles/LoginScreenStyle'
 import PosAction from '../Redux/PosRedux'
 import { Images, Colors } from '../Themes'
+import { shadeColor } from '../Lib/helpers';
 
 const dimensions = Dimensions.get('window');
 const rate = 0.459219858;
@@ -93,7 +94,7 @@ class LoginScreen extends Component {
         </View>
         <View style={styles.buttonsContainer}>
           <TouchableOpacity 
-            style={[styles.loginButton, {width: dimensions.width * rate}]} 
+            style={[styles.loginButton, {width: dimensions.width * rate, backgroundColor: shadeColor(Colors.mainColor, -40)}]} 
             disabled={disabledLogin}
             onPress={() => this.onClickLogin()}
           >
