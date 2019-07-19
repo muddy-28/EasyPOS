@@ -18,6 +18,7 @@ const { Types, Creators } = createActions({
   getDiscounts: ['token'],
   setDiscounts: ['discounts'],
   postTransactions: ['token', 'params'],
+  sendEmail: ['token', 'params'],
 })
 
 export const PosTypes = Types
@@ -92,4 +93,5 @@ export const reducer = createReducer(INITIAL_STATE, {
   [Types.GET_DISCOUNTS]: request,
   [Types.SET_DISCOUNTS]: setDiscounts,
   [Types.POST_TRANSACTIONS]: request,
+  [Types.SEND_EMAIL]: request,
 })

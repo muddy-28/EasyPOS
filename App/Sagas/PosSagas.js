@@ -91,3 +91,15 @@ export function * postTransactions(api, action) {
   }
 }
 
+export function * sendEmail(api, action) {
+  const { token, params } = action
+
+  const response = yield call(api.sendEmail, token, params)
+  console.log("send email", response)
+
+  if (response.ok) {
+    yield put(PosActions.posSuccess())
+  } else {
+    yield put(PosActions.posFailure())
+  }
+}

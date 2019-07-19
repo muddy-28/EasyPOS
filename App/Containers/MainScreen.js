@@ -77,7 +77,8 @@ class MainScreen extends Component {
       selectedProductSizeIndex: 1,
       selectedProductColorIndex: 1,
       // payment dialog
-      paymentMethodSelectedIndex: 1,
+      paymentMethodSelectedIndex: 0,
+      cashAmount: 0,
     }
   }
 
@@ -88,7 +89,32 @@ class MainScreen extends Component {
     this.props.getDiscounts(this.props.user.auth_token);
   }
 
-  doPay(card_type, card_number, card_exp, card_cvv, card_amount) {
+  doPayWithCash(email) {
+    this.setState({showChargeModal: false})
+
+    let inventories = [];
+    this.state.shoppingCart.forEach((sc) => {
+      inventories.push({id: sc.productId, quantity: sc.redNum});
+    })
+
+    let params = { 
+      company_id: this.props.user.companies[companyIndex].id,
+      inventories,
+      register_id: 1,
+      value: this.state.subTotalPrice.toFixed(2),
+      tax_value: this.state.taxPrice.toFixed(2),
+      discount_value: this.state.overAllDiscount.toFixed(2),
+      transaction_total: this.state.totalPrice.toFixed(2),
+      transaction_type: "cash",
+      "publisher-name": "pnpdemo",
+      transaction_mode: "cash",
+    }
+
+    this.props.postTransactions(this.props.user.auth_token, params);
+    this.props.sendEmail(this.props.user.auth_token, {email, message: 'test email'});
+  }
+
+  doPayWithCard(card_type, card_number, card_exp, card_cvv, card_amount) {
     this.setState({showPaymentModal: false});
 
     let inventories = [];
@@ -104,7 +130,8 @@ class MainScreen extends Component {
       tax_value: this.state.taxPrice.toFixed(2),
       discount_value: this.state.overAllDiscount.toFixed(2),
       transaction_total: this.state.totalPrice.toFixed(2),
-      transaction_type: "test",
+      transaction_type: "card",
+      transaction_mode: "card",
       "publisher-name": "pnpdemo",
       // "card-number": card_number,
       "card-number": "3566000020000410",
@@ -139,7 +166,7 @@ class MainScreen extends Component {
     let overAllDiscountPrice = (this.state.selectedDiscountMethodIndex == 0) ? subTotalPrice * this.state.overAllDiscount / 100 : this.state.overAllDiscount;
     let specialPrice = subTotalPrice - overAllDiscountPrice > 0 ? subTotalPrice - overAllDiscountPrice : 0;
     let taxPrice = specialPrice * tax / 100;
-    let totalPrice = specialPrice - taxPrice;
+    let totalPrice = specialPrice + taxPrice;
 
     this.setState({overAllDiscountPrice, taxPrice, totalPrice, subTotalPrice});
   }
@@ -470,8 +497,8 @@ class MainScreen extends Component {
         onClose={() => this.setState({showPaymentModal: false})}
         selectedTabIndex={this.state.paymentMethodSelectedIndex}
         onChangeTabIndex={(index) => this.setState({paymentMethodSelectedIndex: index})}
-        onClickTender={() => this.setState({showPaymentModal: false, showChargeModal: true})}
-        onClickPay={(card_type, card_number, card_exp, card_cvv, card_amount) => this.doPay(card_type, card_number, card_exp, card_cvv, card_amount)}
+        onClickTender={(amount) => this.setState({cashAmount: amount, showPaymentModal: false, showChargeModal: true})}
+        onClickPay={(card_type, card_number, card_exp, card_cvv, card_amount) => this.doPayWithCard(card_type, card_number, card_exp, card_cvv, card_amount)}
       />
     );
   }
@@ -480,9 +507,11 @@ class MainScreen extends Component {
     return (
       <ModalCharge
         visible={this.state.showChargeModal}
-        title='$48.20 Change out of $200.00'
+        // title='$48.20 Change out of $200.00'
+        title={'$' + (parseFloat(this.state.cashAmount) - this.state.totalPrice).toFixed(2) + ' Change out of $' + this.state.totalPrice.toFixed(2)}
         onClose={() => this.setState({showChargeModal: false, showPaymentModal: true})}
-        onFinish={() => this.setState({showChargeModal: false, showAlertModal: true})}
+        // onFinish={() => this.setState({showChargeModal: false, showAlertModal: true})}
+        onFinish={(email) => this.doPayWithCash(email)}
       />
     );
   }
@@ -552,6 +581,7 @@ const mapDispatchToProps = (dispatch) => {
     getTaxes: (token) => dispatch(PosAction.getTaxes(token)),
     getDiscounts: (token) => dispatch(PosAction.getDiscounts(token)),
     postTransactions: (token, params) => dispatch(PosAction.postTransactions(token, params)),
+    sendEmail: (token, params) => dispatch(PosAction.sendEmail(token, params)),
   }
 }
 

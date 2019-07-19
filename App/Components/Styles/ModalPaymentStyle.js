@@ -39,7 +39,7 @@ export default StyleSheet.create({
     alignItems: 'center',
   },
   tabsContainerStyle:{
-    width: 260,
+    width: 280,
     height: 30,
   },
   tabStyle: {
@@ -107,6 +107,8 @@ export default StyleSheet.create({
   price: {
     color: Colors.text1,
     fontSize: 20,
+    flex: 1,
+    marginRight: 16,
   },
   tenderButton: {
     width: 92,

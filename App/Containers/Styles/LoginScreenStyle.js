@@ -49,7 +49,7 @@ export default StyleSheet.create({
   },
   loginButton: {
     marginTop: 8,
-    backgroundColor: '#2f6199',
+    backgroundColor: Colors.darkMainColor,
     borderRadius: 4,
     height: 36,
     justifyContent: 'center',

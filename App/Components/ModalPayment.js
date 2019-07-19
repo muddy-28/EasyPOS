@@ -24,6 +24,7 @@ export default class ModalPayment extends Component {
   constructor(props) {
     super(props)
     this.state = {
+      cashAmount: '',
       card_number: '',
       card_exp: '',
       card_cvv: '',
@@ -42,6 +43,8 @@ export default class ModalPayment extends Component {
 
   refreshState() {
     this.setState({
+      cashAmount: '',
+      inputtingCashAmount: false,
       card_number: '',
       card_exp: '',
       card_cvv: '',
@@ -68,7 +71,8 @@ export default class ModalPayment extends Component {
   }
 
   onClickTender() {
-    this.props.onClickTender();
+    this.props.onClickTender(this.state.cashAmount);
+    this.setState({cashAmount: ''})
   }
 
   onClickPay() {
@@ -76,8 +80,8 @@ export default class ModalPayment extends Component {
     this.refreshState();
   }
 
-  onChangeCardAmount(amount) {
-    this.setState({card_amount: amount});
+  onChangeCardAmount(card_amount) {
+    this.setState({card_amount});
   }
 
   onChangeCardNumber(number) {
@@ -96,6 +100,8 @@ export default class ModalPayment extends Component {
   }
 
   renderCash() {
+    const disabled = !this.state.cashAmount || parseFloat(this.state.cashAmount) < this.props.totalPrice;
+
     return (
       <View style={styles.secondRow}>
         {/* <View style={styles.buttonsRow}>
@@ -104,9 +110,9 @@ export default class ModalPayment extends Component {
           <View style={styles.dotButton}><Text style={styles.dotButtonText}>$200.00</Text></View>
         </View> */}
         <View style={styles.cashDisplayBar}>
-          <Text style={styles.price}>${this.props.totalPrice.toFixed(2)}</Text>
-          <TouchableOpacity onPress={() => this.onClickTender()} style={styles.tenderButton}>
-            <Text style={styles.tenderButtonText}>TENDER</Text>
+          <TextInput style={styles.price} value={this.state.cashAmount} onChangeText={(cashAmount) => this.setState({cashAmount})} placeholder="Cash Amount" />
+          <TouchableOpacity disabled={disabled} onPress={() => this.onClickTender()} style={styles.tenderButton}>
+            <Text style={[styles.tenderButtonText, disabled ? {color: '#cccccc'} : null]}>TENDER</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -138,7 +144,7 @@ export default class ModalPayment extends Component {
             placeholder='Card Amount' 
             placeholderTextColor={Colors.text2} 
             value={this.state.card_amount} 
-            onChangeText={(amount) => this.onChangeCardAmount(amount)} 
+            onChangeText={(cardAmount) => this.onChangeCardAmount(cardAmount)} 
             onFocus={() => this.setState({inputtingCardAmount: true})}
             onBlur={() => this.setState({inputtingCardAmount: false})}
           />
