@@ -1,0 +1,99 @@
+{
+  "project_info": {
+    "project_number": "926171354534",
+    "firebase_url": "https://paylanes-5d1e5.firebaseio.com",
+    "project_id": "paylanes-5d1e5",
+    "storage_bucket": "paylanes-5d1e5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:926171354534:android:792b3442a456dd34",
+        "android_client_info": {
+          "package_name": "com.app.easypos_test"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "926171354534-o5bi30t9m5rnsm5st5m0hup5dnkhvr5e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQXCGexNdpC5teyZQo7ZkjkTxtA6v6Ktc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "926171354534-o5bi30t9m5rnsm5st5m0hup5dnkhvr5e.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "926171354534-fa1djacrkdphpj25mf3brgvg5ainqdsa.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.app.easypos-test"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:926171354534:android:86d961267acf8658",
+        "android_client_info": {
+          "package_name": "io.revel.paylanes"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "926171354534-m8lgvhh9r7qpbp109jljlpfc2lqti2i2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.revel.paylanes",
+            "certificate_hash": "30de1a015f4e350b172f38a482a61285956d0a81"
+          }
+        },
+        {
+          "client_id": "926171354534-5os4auu9s9j7vlsogfs772hnlkc7341u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.revel.paylanes",
+            "certificate_hash": "45e472069cb28acc2b2c0579de560680be0c1f37"
+          }
+        },
+        {
+          "client_id": "926171354534-o5bi30t9m5rnsm5st5m0hup5dnkhvr5e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQXCGexNdpC5teyZQo7ZkjkTxtA6v6Ktc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "926171354534-o5bi30t9m5rnsm5st5m0hup5dnkhvr5e.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "926171354534-fa1djacrkdphpj25mf3brgvg5ainqdsa.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.app.easypos-test"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

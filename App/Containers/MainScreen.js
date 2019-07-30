@@ -22,7 +22,7 @@ import ModalConfirm from '../Components/ModalConfirm';
 import ModalPayment from '../Components/ModalPayment';
 import { hexToRgba } from '../Lib/helpers';
 
-const companyIndex = 5
+const companyIndex = 0;
 
 class MainScreen extends Component {
   constructor (props) {
@@ -494,6 +494,7 @@ class MainScreen extends Component {
       <ModalPayment
         visible={this.state.showPaymentModal}
         totalPrice={this.state.totalPrice}
+        // company_name={this.}
         onClose={() => this.setState({showPaymentModal: false})}
         selectedTabIndex={this.state.paymentMethodSelectedIndex}
         onChangeTabIndex={(index) => this.setState({paymentMethodSelectedIndex: index})}

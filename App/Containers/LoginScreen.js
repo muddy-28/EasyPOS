@@ -21,7 +21,7 @@ class LoginScreen extends Component {
       logoWidth: 0, 
       logoHeight: 0, 
       screenMarginTop: dimensions.height * 0.08, 
-      email: 'comapany@user.com',
+      email: 'company@user.com',
       password: 'password',
       isEmailError: false, 
       isPasswordError: false,

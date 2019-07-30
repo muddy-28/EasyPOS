@@ -193,9 +193,9 @@ export default class ModalPayment extends Component {
   }
 
   renderMobile() {
-    const data = {value: this.props.totalPrice, orderId: 3}
+    const data = { amount: this.props.totalPrice, order_id: 1, company_name: 'adidas' }
     return (
-      <View>
+      <View style={{borderWidth: 1,}}>
         <QRCode logo={Images.logo} value={JSON.stringify(data)} />
       </View>
     );
