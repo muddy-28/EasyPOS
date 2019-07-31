@@ -194,6 +194,9 @@ export default StyleSheet.create({
     width: 37.4,
     height: 10,
     marginHorizontal: 8,
-  }
-
+  },
+  qrContainer: {
+    alignItems: 'center',
+    padding: 16,
+  },
 })

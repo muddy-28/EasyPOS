@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { View, ScrollView, Text, TextInput, TouchableOpacity, Image, Dimensions, ActivityIndicator, AsyncStorage, Alert } from 'react-native'
+import { View, ScrollView, Text, TextInput, TouchableOpacity, Image, Dimensions, ActivityIndicator, AsyncStorage } from 'react-native'
 import { connect } from 'react-redux'
 import firebase from 'react-native-firebase'
 
@@ -37,12 +37,6 @@ class LoginScreen extends Component {
     });
 
     await this.checkPermission();
-    this.createNotificationListeners();
-  }
-
-  componentWillUnmount() {
-    this.notificationListener();
-    this.notificationOpenedListener();
   }
 
   async createNotificationListeners() {
@@ -98,7 +92,6 @@ class LoginScreen extends Component {
       fcmToken = await firebase.messaging().getToken();
       if (fcmToken) {
         console.log("zzz token", fcmToken);
-        alert(fcmToken);
         // user has a device token
         await AsyncStorage.setItem('fcmToken', fcmToken);
       }
@@ -114,16 +107,6 @@ class LoginScreen extends Component {
       // User has rejected permissions
       console.log('permission rejected');
     }
-  }
-  
-  showAlert(title, body) {
-    Alert.alert(
-      title, body,
-      [
-          { text: 'OK', onPress: () => console.log('OK Pressed') },
-      ],
-      { cancelable: false },
-    );
   }
 
   validateEmail(text) {

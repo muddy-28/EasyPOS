@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { ScrollView, Text, View, TouchableOpacity, Image } from 'react-native';
+import { ScrollView, Text, View, TouchableOpacity, Image, AsyncStorage, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import firebase from 'react-native-firebase'
 import { connect } from 'react-redux';
 
 // Styles
@@ -82,11 +83,69 @@ class MainScreen extends Component {
     }
   }
 
-  componentWillMount() {
+  async componentWillMount() {
     this.props.getInventories(this.props.user.auth_token, this.props.user.companies[companyIndex].id);
     this.props.getCategories(this.props.user.auth_token);
     this.props.getTaxes(this.props.user.auth_token);
     this.props.getDiscounts(this.props.user.auth_token);
+    this.fcmToken = await AsyncStorage.getItem('fcmToken');
+    this.createNotificationListeners();
+  }
+
+  componentWillUnmount() {
+    this.notificationListener();
+    this.notificationOpenedListener();
+  }
+
+  async createNotificationListeners() {
+    console.log("zzz", "start");
+    /*
+    * Triggered when a particular notification has been received in foreground
+    * */
+    this.notificationListener = firebase.notifications().onNotification((notification) => {
+      console.log("zzz", "received");
+      const { title, body } = notification;
+      this.showAlert(title, body);
+      if (title === 'Succeed') {
+        this.setState({showPaymentModal: false});
+      }
+    });
+  
+    /*
+    * If your app is in background, you can listen for when a notification is clicked / tapped / opened as follows:
+    * */
+    this.notificationOpenedListener = firebase.notifications().onNotificationOpened((notificationOpen) => {
+      console.log("zzz", "received 2");
+      const { title, body } = notificationOpen.notification;
+      this.showAlert(title, body);
+    });
+  
+    /*
+    * If your app is closed, you can check if it was opened by a notification being clicked / tapped / opened as follows:
+    * */
+    const notificationOpen = await firebase.notifications().getInitialNotification();
+    if (notificationOpen) {
+      console.log("zzz", "received 3");
+      const { title, body } = notificationOpen.notification;
+      this.showAlert(title, body);
+    }
+    /*
+    * Triggered for data only payload in foreground
+    * */
+    this.messageListener = firebase.messaging().onMessage((message) => {
+      //process data message
+      console.log("zzz", JSON.stringify(message));
+    });
+  }
+  
+  showAlert(title, body) {
+    Alert.alert(
+      title, body,
+      [
+          { text: 'OK', onPress: () => console.log('OK Pressed') },
+      ],
+      { cancelable: false },
+    );
   }
 
   doPayWithCash(email) {
@@ -494,7 +553,8 @@ class MainScreen extends Component {
       <ModalPayment
         visible={this.state.showPaymentModal}
         totalPrice={this.state.totalPrice}
-        // company_name={this.}
+        company_name={this.props.user.companies[companyIndex].name_of_company}
+        fcmToken={this.fcmToken}
         onClose={() => this.setState({showPaymentModal: false})}
         selectedTabIndex={this.state.paymentMethodSelectedIndex}
         onChangeTabIndex={(index) => this.setState({paymentMethodSelectedIndex: index})}

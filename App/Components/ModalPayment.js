@@ -14,6 +14,8 @@ export default class ModalPayment extends Component {
     // subPrice: PropTypes.number,
     // overallDiscountPrice: PropTypes.number,
     // taxPrice: PropTypes.number,
+    company_name: PropTypes.string,
+    fcmToken: PropTypes.string,
     totalPrice: PropTypes.number,
     selectedTabIndex: PropTypes.number,
     onClose: PropTypes.func,
@@ -193,10 +195,12 @@ export default class ModalPayment extends Component {
   }
 
   renderMobile() {
-    const data = { amount: this.props.totalPrice, order_id: 1, company_name: 'adidas' }
+    const data = { amount: 0.1, order_id: 1, company_name: this.props.company_name, to: this.props.fcmToken }
+    // const data = { amount: this.props.totalPrice, order_id: 1, company_name: this.props.company_name, to: this.props.fcmToken }
+
     return (
-      <View style={{borderWidth: 1,}}>
-        <QRCode logo={Images.logo} value={JSON.stringify(data)} />
+      <View style={styles.qrContainer}>
+        <QRCode logo={Images.logo} value={JSON.stringify(data)} size={200} />
       </View>
     );
   }
