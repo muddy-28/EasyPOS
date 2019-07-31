@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
-import { View, ScrollView, Text, TextInput, TouchableOpacity, Image, Dimensions, ActivityIndicator } from 'react-native'
+import { View, ScrollView, Text, TextInput, TouchableOpacity, Image, Dimensions, ActivityIndicator, AsyncStorage, Alert } from 'react-native'
 import { connect } from 'react-redux'
+import firebase from 'react-native-firebase'
 
 // Styles
 import styles from './Styles/LoginScreenStyle'
@@ -28,12 +29,100 @@ class LoginScreen extends Component {
     }
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     Image.getSize(Image.resolveAssetSource(Images.logo).uri, (width, height) => {
       const scaleFactor = width / dimensions.width;
       const imageHeight = height / scaleFactor;
       this.setState({logoWidth: dimensions.width * rate * 0.88, logoHeight: imageHeight * rate * 0.88});
     });
+
+    await this.checkPermission();
+    this.createNotificationListeners();
+  }
+
+  componentWillUnmount() {
+    this.notificationListener();
+    this.notificationOpenedListener();
+  }
+
+  async createNotificationListeners() {
+    console.log("zzz", "start");
+    /*
+    * Triggered when a particular notification has been received in foreground
+    * */
+    this.notificationListener = firebase.notifications().onNotification((notification) => {
+      console.log("zzz", "received");
+      const { title, body } = notification;
+      this.showAlert(title, body);
+    });
+  
+    /*
+    * If your app is in background, you can listen for when a notification is clicked / tapped / opened as follows:
+    * */
+    this.notificationOpenedListener = firebase.notifications().onNotificationOpened((notificationOpen) => {
+      console.log("zzz", "received 2");
+      const { title, body } = notificationOpen.notification;
+      this.showAlert(title, body);
+    });
+  
+    /*
+    * If your app is closed, you can check if it was opened by a notification being clicked / tapped / opened as follows:
+    * */
+    const notificationOpen = await firebase.notifications().getInitialNotification();
+    if (notificationOpen) {
+      console.log("zzz", "received 3");
+      const { title, body } = notificationOpen.notification;
+      this.showAlert(title, body);
+    }
+    /*
+    * Triggered for data only payload in foreground
+    * */
+    this.messageListener = firebase.messaging().onMessage((message) => {
+      //process data message
+      console.log("zzz", JSON.stringify(message));
+    });
+  }
+
+  async checkPermission() {
+    const enabled = await firebase.messaging().hasPermission();
+    if (enabled) {
+      this.getToken();
+    } else {
+      this.requestPermission();
+    }
+  }
+
+  async getToken() {
+    let fcmToken = await AsyncStorage.getItem('fcmToken');
+    if (!fcmToken) {
+      fcmToken = await firebase.messaging().getToken();
+      if (fcmToken) {
+        console.log(fcmToken);
+        // user has a device token
+        await AsyncStorage.setItem('fcmToken', fcmToken);
+      }
+    }
+  }
+
+  async requestPermission() {
+    try {
+      await firebase.messaging().requestPermission();
+      // User has authorised
+      this.getToken();
+    } catch (error) {
+      // User has rejected permissions
+      console.log('permission rejected');
+    }
+  }
+  
+  showAlert(title, body) {
+    Alert.alert(
+      title, body,
+      [
+          { text: 'OK', onPress: () => console.log('OK Pressed') },
+      ],
+      { cancelable: false },
+    );
   }
 
   validateEmail(text) {
