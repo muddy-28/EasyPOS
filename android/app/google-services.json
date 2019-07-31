@@ -8,9 +8,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:926171354534:android:792b3442a456dd34",
+        "mobilesdk_app_id": "1:926171354534:android:99c8ff8374c086af",
         "android_client_info": {
-          "package_name": "com.app.easypos_test"
+          "package_name": "com.easypos"
         }
       },
       "oauth_client": [

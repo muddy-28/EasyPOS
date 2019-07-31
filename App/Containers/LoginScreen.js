@@ -97,7 +97,8 @@ class LoginScreen extends Component {
     if (!fcmToken) {
       fcmToken = await firebase.messaging().getToken();
       if (fcmToken) {
-        console.log(fcmToken);
+        console.log("zzz token", fcmToken);
+        alert(fcmToken);
         // user has a device token
         await AsyncStorage.setItem('fcmToken', fcmToken);
       }
