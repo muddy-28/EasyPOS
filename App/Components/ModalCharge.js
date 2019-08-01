@@ -49,7 +49,7 @@ export default class ModalCharge extends Component {
     const disabled = this.state.isEmailError;
 
     return (
-      <Modal animationType="slide" transparent={true} visible={this.props.visible}>
+      <Modal animationType="slide" transparent={true} visible={this.props.visible} supportedOrientations={['portrait', 'portrait-upside-down', 'landscape', 'landscape-left', 'landscape-right']}>
         <View style={styles.screenContainer}>
           <View style={styles.modal}>
             <View style={[styles.titleRow, styles.borderRow]}>
