@@ -107,7 +107,7 @@ class MainScreen extends Component {
       const { title, body } = notification;
       this.showAlert(title, body);
       if (title === 'Succeed') {
-        this.setState({showPaymentModal: false});
+        this.setState({showPaymentModal: false, shoppingCart: []});
       }
     });
   
