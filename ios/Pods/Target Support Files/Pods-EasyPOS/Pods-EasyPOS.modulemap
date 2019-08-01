@@ -1,6 +1,0 @@
-framework module Pods_EasyPOS {
-  umbrella header "Pods-EasyPOS-umbrella.h"
-
-  export *
-  module * { export * }
-}
