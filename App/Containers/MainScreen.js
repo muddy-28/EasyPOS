@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { ScrollView, Text, View, TouchableOpacity, Image, AsyncStorage, Alert } from 'react-native';
+import { ScrollView, Text, View, TouchableOpacity, Image, AsyncStorage, Alert, Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import firebase from 'react-native-firebase'
 import { connect } from 'react-redux';
@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 // Styles
 import styles from './Styles/MainScreenStyle';
 import PosAction from '../Redux/PosRedux'
-import { Images, Colors } from '../Themes';
+import { Images, Colors, Metrics } from '../Themes';
 import HeaderMain from '../Components/HeaderMain';
 import ProductBig from '../Components/ProductBig';
 import ProductSmall from '../Components/ProductSmall';
@@ -29,6 +29,12 @@ class MainScreen extends Component {
   constructor (props) {
     super(props)
 
+    const {width, height} = Dimensions.get('window');
+    const leftPanelWidth = width * Metrics.bigPanelRate - 1;
+    let productWidth = 126 + 24 + 1;
+    const numPerRow = Math.floor(leftPanelWidth / productWidth);
+    productWidth = leftPanelWidth / numPerRow;
+
     this.state = {
       showCategoriesModal: false,
       showAddDiscountModal: false,
@@ -42,24 +48,20 @@ class MainScreen extends Component {
       productsListSelected: false,
       searchSelected: false,
       productSearchString: '',
-      productsNumPerRow: 4,
+      productComponentWidth: productWidth,
       orders: [
-        [
-          {kind: 'green', no: '14876', price: 28, name: 'James'},
-          {kind: 'orange', no: '14877', price: 24, name: 'John'},
-          {kind: 'orange', no: '14878', price: 35, name: 'John'},
-          {kind: 'orange', no: '14879', price: 42, name: 'John'},
-          {kind: 'green', no: '14880', price: 28, name: 'James'},
-          {kind: 'green', no: '14881', price: 43, name: 'James'},
-        ],
-        [
-          {kind: 'green', no: '14882', price: 21, name: 'James'},
-          {kind: 'green', no: '14883', price: 26, name: 'James'},
-          {kind: 'blue', no: '14884', price: 38, name: ''},
-          {kind: 'orange', no: '14885', price: 32, name: ''},
-          {kind: 'blue', no: '14886', price: 28, name: ''},
-          {kind: 'green', no: '14887', price: 31, name: 'James'},
-        ],
+        {kind: 'green', no: '14876', price: 28, name: 'James'},
+        {kind: 'orange', no: '14877', price: 24, name: 'John'},
+        {kind: 'orange', no: '14878', price: 35, name: 'John'},
+        {kind: 'orange', no: '14879', price: 42, name: 'John'},
+        {kind: 'green', no: '14880', price: 28, name: 'James'},
+        {kind: 'green', no: '14881', price: 43, name: 'James'},
+        {kind: 'green', no: '14882', price: 21, name: 'James'},
+        {kind: 'green', no: '14883', price: 26, name: 'James'},
+        {kind: 'blue', no: '14884', price: 38, name: ''},
+        {kind: 'orange', no: '14885', price: 32, name: ''},
+        {kind: 'blue', no: '14886', price: 28, name: ''},
+        {kind: 'green', no: '14887', price: 31, name: 'James'},
       ],
       selectedCategoryId: -1,
       selectedProductId: -1,
@@ -328,28 +330,23 @@ class MainScreen extends Component {
 
   renderBigProducts() {
     const inventories = this.props.inventories.filter((inv) => (this.state.selectedCategoryId == -1 ? true : inv.category_id == this.state.selectedCategoryId) && (inv.title.toLowerCase().indexOf(this.state.productSearchString.toLowerCase()) != -1));
-    
-    return inventories.map((ps, i) => {
-      if (i % this.state.productsNumPerRow == 0) {
-        return (
-          <View key={'row_' + i.toString()} style={styles.productsContainer}>
-            {
-              inventories.filter((pp, ii) => ii >= i && ii < i + this.state.productsNumPerRow).map((product, index) => {
-                return (
-                  <View key={'p_' + index.toString()}>
-                    <View style={[styles.productContainer, this.state.selectedProductId == product.id ? {backgroundColor: hexToRgba(Colors.mainColor, 0.3),} : null]}>
-                      <ProductBig productImage={product.image} productLabel={product.title} onPress={() => this.setState({selectedProductId: product.id})} />
-                      <View style={styles.verticalSeparator}></View>
-                    </View>
-                    <View style={styles.horizontalSeparator}></View>
-                  </View>
-                );
-              })
-            }
-          </View>
-        );
-      }
-    });
+
+    return (
+      <View style={styles.productsContainer}>
+        {
+          inventories.map((product, i) => {
+            return (
+              <View 
+                key={'p_' + i.toString()} 
+                style={[styles.productContainer, {width: this.state.productComponentWidth}, this.state.selectedProductId == product.id ? {backgroundColor: hexToRgba(Colors.mainColor, 0.3),} : null]}
+              >
+                <ProductBig productImage={product.image} productLabel={product.title} onPress={() => this.setState({selectedProductId: product.id})} />
+              </View>
+            );
+          })
+        }
+      </View>
+    );
   }
 
   renderSmallProducts() {
@@ -368,25 +365,25 @@ class MainScreen extends Component {
   }
 
   renderOrders() {
-    return (
-      <View style={styles.ordersContainer}>
-        {
-          this.state.orders.map((os, i) => {
-            return (
-              <View key={'orders_row_' + i.toString()} style={styles.ordersRow}>
-                {os.map((order, index) => {
-                  return (
-                    <View key={'order_' + index.toString()} style={styles.order}>
-                      <OrderCard order={order} />
-                    </View>
-                  );
-                })}
-              </View>
-            );
-          })
-        }
-      </View>
-    );
+    // return (
+    //   <View style={styles.ordersContainer}>
+    //     {
+    //       this.state.orders.map((os, i) => {
+    //         return (
+    //           <View key={'orders_row_' + i.toString()} style={styles.ordersRow}>
+    //             {os.map((order, index) => {
+    //               return (
+    //                 <View key={'order_' + index.toString()} style={styles.order}>
+    //                   <OrderCard order={order} />
+    //                 </View>
+    //               );
+    //             })}
+    //           </View>
+    //         );
+    //       })
+    //     }
+    //   </View>
+    // );
   }
 
   renderRightPanel() {

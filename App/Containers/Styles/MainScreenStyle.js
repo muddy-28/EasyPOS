@@ -4,7 +4,6 @@ import { Colors, Metrics } from '../../Themes/'
 const {width, height} = Dimensions.get('window');
 const leftPanelWidth = width * Metrics.bigPanelRate;
 const rightPanelWidth = width * Metrics.smallPanelRate;
-const productWidth = (leftPanelWidth) / 4;
 
 export default StyleSheet.create({
   container: {
@@ -22,12 +21,18 @@ export default StyleSheet.create({
     backgroundColor: 'white',
   },
   productsContainer: {
+    width: leftPanelWidth,
+    flexWrap: 'wrap',
     flexDirection: 'row',
+    borderTopWidth: 1,
+    borderLeftWidth: 1,
+    borderColor: Colors.border,
   },
   productContainer: {
-    width: productWidth,
-    paddingVertical: 14,
-    flexDirection: 'row',
+    paddingVertical: 12,
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: Colors.border,
   },
   horizontalSeparator: {
     flex: 1,
