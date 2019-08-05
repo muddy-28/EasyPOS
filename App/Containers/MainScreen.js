@@ -30,7 +30,7 @@ class MainScreen extends Component {
     super(props)
 
     const {width, height} = Dimensions.get('window');
-    const leftPanelWidth = width * Metrics.bigPanelRate - 1;
+    const leftPanelWidth = width * Metrics.bigPanelRate - 2;
     let productWidth = 126 + 24 + 1;
     const numPerRow = Math.floor(leftPanelWidth / productWidth);
     productWidth = leftPanelWidth / numPerRow;
