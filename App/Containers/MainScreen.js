@@ -23,7 +23,7 @@ import ModalConfirm from '../Components/ModalConfirm';
 import ModalPayment from '../Components/ModalPayment';
 import { hexToRgba } from '../Lib/helpers';
 
-const companyIndex = 0;
+const companyIndex = 2;
 
 class MainScreen extends Component {
   constructor (props) {
@@ -100,7 +100,6 @@ class MainScreen extends Component {
   }
 
   async createNotificationListeners() {
-    console.log("zzz", "start");
     /*
     * Triggered when a particular notification has been received in foreground
     * */

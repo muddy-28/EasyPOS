@@ -22,8 +22,10 @@ class LoginScreen extends Component {
       logoWidth: 0, 
       logoHeight: 0, 
       screenMarginTop: dimensions.height * 0.08, 
-      email: 'company@user.com',
-      password: 'password',
+      // email: 'company@user.com',
+      // password: 'password',
+      email: 'sasa.savic.upwork@gmail.com',
+      password: 'qwerasdf',
       isEmailError: false, 
       isPasswordError: false,
     }
