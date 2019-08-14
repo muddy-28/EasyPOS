@@ -64,21 +64,21 @@ export default class HeaderMain extends Component {
                 <Icon name='chevron-down' size={24} color={this.props.productSelected ? Colors.mainColor : 'white'} />
               </TouchableOpacity>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => this.props.onClickOrders()} style={[styles.button, this.props.productSelected ? null : styles.selectedButton]}>
+            <TouchableOpacity disabled={true} onPress={() => this.props.onClickOrders()} style={[styles.button, this.props.productSelected ? null : styles.selectedButton]}>
               <Text style={[styles.buttonText, this.props.productSelected ? null : styles.selectedButtonText]}>Orders</Text>
             </TouchableOpacity>
           </View>
           <View style={[styles.buttonsContainer, styles.rightButtons]}>
             {this.props.searchSelected ? this.renderSearchTextBox() : this.renderSearchIcon()}
             {this.props.productSelected ? 
-              <TouchableOpacity onPress={() => this.props.onClickAddInventory()} style={[styles.buttonsContainer, styles.rightButtons]}>
+              <TouchableOpacity disabled={true} onPress={() => this.props.onClickAddInventory()} style={[styles.buttonsContainer, styles.rightButtons]}>
                 <CustomIcon name="add" />
               </TouchableOpacity>
             : null}
           </View>
         </View>
         <View style={[styles.partContainer, styles.rightPart]}>
-          <TouchableOpacity onPress={() => this.props.onClickList()} style={[styles.buttonsContainer, styles.leftButtons]}>
+          <TouchableOpacity disabled={true} onPress={() => this.props.onClickList()} style={[styles.buttonsContainer, styles.leftButtons]}>
             <CustomIcon name="list" />
           </TouchableOpacity>
           <View style={styles.rightTextContainer}>

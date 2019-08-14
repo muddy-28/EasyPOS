@@ -173,7 +173,7 @@ class LoginScreen extends Component {
             disabled={disabledLogin}
             onPress={() => this.onClickLogin()}
           >
-            {this.props.fetching ? <ActivityIndicator style={styles.loadingIcon} size="small" color={'white'} /> : <Text style={[styles.loginText, disabledLogin ? styles.disableButton : null]}>Sign in</Text>}
+            {this.props.fetching ? <ActivityIndicator style={styles.loadingIcon} size="small" color={'white'} /> : <Text style={[styles.loginText, disabledLogin ? styles.disableButtonText : null]}>Sign in</Text>}
           </TouchableOpacity>
 
           <View style={[styles.textButtonsContainer, {width: dimensions.width * rate}]}>

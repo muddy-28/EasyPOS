@@ -29,7 +29,13 @@ export function * getInventories(api, action) {
   console.log("inventories", response)
 
   if (response.ok) {
-    const inventories = response.data.inventories
+    let inventories = response.data.inventories
+    if (inventories && inventories.length > 0) {
+      inventories = inventories.sort(function(a, b) {
+        return a.id - b.id
+      })
+    }
+
     yield put(PosActions.setInventories({ inventories }))
   } else {
     yield put(PosActions.posFailure())

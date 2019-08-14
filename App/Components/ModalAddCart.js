@@ -31,7 +31,7 @@ export default class ModalAddCart extends Component {
           <View style={styles.modal}>
             <View style={[styles.titleRow, styles.borderRow]}>
               <TouchableOpacity onPress={() => this.props.onClose()}><CustomIcon name="black_close" /></TouchableOpacity>
-              <Text style={styles.title}>Add: Product 1</Text>
+              <Text style={styles.title}>Add: Product</Text>
               <TouchableOpacity onPress={() => this.props.onClickAdd()}><CustomIcon name="black_add" /></TouchableOpacity>
             </View>
             <View style={[styles.commonRow, styles.secondRow, styles.borderRow]}>

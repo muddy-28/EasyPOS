@@ -222,5 +222,8 @@ export default StyleSheet.create({
   },
   lastSmallProduct: {
     marginBottom: 16,
-  }
+  },
+  disableButtonText: {
+    color: Colors.cloud,
+  },
 })

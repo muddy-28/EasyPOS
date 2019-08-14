@@ -86,10 +86,10 @@ class MainScreen extends Component {
   }
 
   async componentWillMount() {
-    this.props.getInventories(this.props.user.auth_token, this.props.user.companies[companyIndex].id);
-    this.props.getCategories(this.props.user.auth_token);
-    this.props.getTaxes(this.props.user.auth_token);
-    this.props.getDiscounts(this.props.user.auth_token);
+    this.props.getInventories(this.props.user.token, this.props.user.companies[companyIndex].id);
+    this.props.getCategories(this.props.user.token);
+    this.props.getTaxes(this.props.user.token);
+    this.props.getDiscounts(this.props.user.token);
     this.fcmToken = await AsyncStorage.getItem('fcmToken');
     this.createNotificationListeners();
   }
@@ -170,8 +170,8 @@ class MainScreen extends Component {
       transaction_mode: "cash",
     }
 
-    this.props.postTransactions(this.props.user.auth_token, params);
-    this.props.sendEmail(this.props.user.auth_token, {email, message: 'test email'});
+    this.props.postTransactions(this.props.user.token, params);
+    this.props.sendEmail(this.props.user.token, {email, message: 'test email'});
   }
 
   doPayWithCard(card_type, card_number, card_exp, card_cvv, card_amount) {
@@ -201,7 +201,7 @@ class MainScreen extends Component {
       "card-cvv": card_cvv,
     }
 
-    this.props.postTransactions(this.props.user.auth_token, params);
+    this.props.postTransactions(this.props.user.token, params);
   }
 
   getTax() {
@@ -286,10 +286,26 @@ class MainScreen extends Component {
   }
 
   onClickAddCart() {
-    if (this.props.inventories.length == 0 || this.state.selectedProductId == -1) return;
+    if (this.props.inventories.length == 0) {
+      alert("Please select an inventory.");
+      return;
+    }
 
-    const inventories = this.props.inventories.filter((inv) => (this.state.selectedCategoryId == -1 ? true : inv.category_id == this.state.selectedCategoryId) && inv.id == this.state.selectedProductId && (inv.title.toLowerCase().indexOf(this.state.productSearchString.toLowerCase()) != -1));
-    if (inventories.length == 0) return;
+    if (this.state.selectedProductId == -1) {
+      alert("Please select an inventory.");
+      return;
+    }
+
+    const inventories = this.props.inventories.filter((inv) => {
+      return  (this.state.selectedCategoryId == -1 ? true : inv.category_id == this.state.selectedCategoryId) && 
+              inv.id == this.state.selectedProductId && 
+              (inv.title.toLowerCase().indexOf(this.state.productSearchString.toLowerCase()) != -1)
+    })
+
+    if (inventories.length == 0) {
+      alert("Please select an inventory.");
+      return;
+    }
 
     this.showOneModal('addCart');
     this.setState({productNumber: 1, selectedProductSizeIndex: 1, selectedProductColorIndex: 1})
@@ -430,9 +446,7 @@ class MainScreen extends Component {
                 <Image source={product.image && product.image.url ? {uri: product.image.url} : Images.product} resizeMode="cover" style={styles.cashierImage} />
                 {sc.redNum > 1 ? <View style={styles.cashierRedNumContainer}><Text style={styles.cashierRedNum}>{sc.redNum}</Text></View> : null}
               </View>
-              <View 
-                style={[styles.cashierRightContainer, index == this.state.shoppingCart.length - 1 ? styles.cashierLastRightContainer : null]}
-              >
+              <View style={[styles.cashierRightContainer, index == this.state.shoppingCart.length - 1 ? styles.cashierLastRightContainer : null]}>
                 <View style={styles.cashierInfoContainer}>
                   <Text style={styles.cashierName}>{product.title}</Text>
                   <Text style={styles.cashierDescription}>{product.description_of_item}</Text>
@@ -448,6 +462,7 @@ class MainScreen extends Component {
 
   renderCalc() {
     let tax = this.getTax();
+    const enableChange = this.state.shoppingCart && this.state.shoppingCart.length > 0;
 
     return (
       <View>
@@ -471,9 +486,9 @@ class MainScreen extends Component {
           </View>
         </View>
 
-        <TouchableOpacity onPress={() => this.setState({showPaymentModal: true})} style={[styles.chargeButton]}>
-          <Text style={styles.chargeText}>Charge</Text>
-          <Text style={styles.priceText}>${this.state.totalPrice.toFixed(2)}</Text>
+        <TouchableOpacity disabled={!enableChange} onPress={() => this.setState({showPaymentModal: true})} style={[styles.chargeButton]}>
+          <Text style={[styles.chargeText, enableChange ? null : styles.disableButtonText]}>Charge</Text>
+          <Text style={[styles.priceText, enableChange ? null : styles.disableButtonText]}>${this.state.totalPrice.toFixed(2)}</Text>
         </TouchableOpacity>
       </View>
     );
