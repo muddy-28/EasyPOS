@@ -10,18 +10,21 @@ import { Images, Colors } from '../Themes'
 import { shadeColor } from '../Lib/helpers';
 
 const dimensions = Dimensions.get('window');
-const rate = 0.459219858;
+const rate = 0.48;
+const org_logo_width = 564;
+const org_logo_height = 259;
 
 class LoginScreen extends Component {
   constructor(props) {
     super(props)
-    // const { navigation } = this.props
-    // const { state: {params}} = navigation
-    // this.state = { contest: params.contest, selectedIndex: 0, tab: params.tab }
+
     this.state = {
       logoWidth: 0, 
       logoHeight: 0, 
       screenMarginTop: dimensions.height * 0.08, 
+      logoWidth: dimensions.width * rate * 0.88,
+      logoHeight: dimensions.width * rate * 0.88 / org_logo_width * org_logo_height,
+
       // email: 'company@user.com',
       // password: 'password',
       email: 'sasa.savic.upwork@gmail.com',
@@ -32,12 +35,6 @@ class LoginScreen extends Component {
   }
 
   async componentDidMount() {
-    Image.getSize(Image.resolveAssetSource(Images.logo).uri, (width, height) => {
-      const scaleFactor = width / dimensions.width;
-      const imageHeight = height / scaleFactor;
-      this.setState({logoWidth: dimensions.width * rate * 0.88, logoHeight: imageHeight * rate * 0.88});
-    });
-
     await this.checkPermission();
   }
 
