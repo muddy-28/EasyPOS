@@ -11,9 +11,6 @@ export default StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  logoImage: {
-    resizeMode: 'contain',
-  },
   inputsContainer: {
     flex: 1,
     justifyContent: 'center',

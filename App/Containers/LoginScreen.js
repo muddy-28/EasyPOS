@@ -141,7 +141,7 @@ class LoginScreen extends Component {
     return (
       <ScrollView style={[styles.container, styles.screenContainer]}>
         <View style={[styles.logoImageContainer, {marginTop: screenMarginTop}]}>
-          <Image source={Images.logo} style={[styles.logoImage, {width: logoWidth, height: logoHeight}]} resizeMode='stretch' />
+          <Image source={Images.logo} style={{width: logoWidth, height: logoHeight}} resizeMode='stretch' />
         </View>
         <View style={styles.inputsContainer}>
           <TextInput
