@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { View, ScrollView, Text, TextInput, TouchableOpacity, Image, Dimensions, ActivityIndicator, AsyncStorage } from 'react-native'
+import { View, ScrollView, Text, TextInput, TouchableOpacity, Image, Dimensions, AsyncStorage } from 'react-native'
 import { connect } from 'react-redux'
 import firebase from 'react-native-firebase'
 
@@ -136,7 +136,7 @@ class LoginScreen extends Component {
 
   render () {
     const { logoWidth, logoHeight, screenMarginTop, isEmailError, isPasswordError } = this.state;
-    const disabledLogin = isEmailError || isPasswordError || this.props.fetching;
+    const disabledLogin = isEmailError || isPasswordError;
 
     return (
       <ScrollView style={[styles.container, styles.screenContainer]}>
@@ -173,7 +173,7 @@ class LoginScreen extends Component {
             disabled={disabledLogin}
             onPress={() => this.onClickLogin()}
           >
-            {this.props.fetching ? <ActivityIndicator style={styles.loadingIcon} size="small" color={'white'} /> : <Text style={[styles.loginText, disabledLogin ? styles.disableButtonText : null]}>Sign in</Text>}
+            <Text style={[styles.loginText, disabledLogin ? styles.disableButtonText : null]}>Sign in</Text>
           </TouchableOpacity>
 
           <View style={[styles.textButtonsContainer, {width: dimensions.width * rate}]}>
@@ -192,7 +192,6 @@ class LoginScreen extends Component {
 
 const mapStateToProps = ({ pos }) => {
   return {
-    fetching: pos.fetching,
     error: pos.error,
   }
 }
