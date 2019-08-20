@@ -6,6 +6,7 @@ import StartupActions from '../Redux/StartupRedux'
 
 // Styles
 import styles from './Styles/RootContainerStyles'
+import LoadingIndicator from '../Components/LoadingIndicator';
 
 class RootContainer extends Component {
   componentDidMount () {
@@ -17,6 +18,7 @@ class RootContainer extends Component {
       <View style={styles.applicationView}>
         <StatusBar barStyle='light-content' />
         <ReduxNavigation />
+        <LoadingIndicator />
       </View>
     )
   }
