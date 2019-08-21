@@ -200,7 +200,7 @@ export default class ModalPayment extends Component {
 
     return (
       <View style={styles.qrContainer}>
-        <QRCode logo={Images.logo} value={JSON.stringify(data)} size={200} />
+        <QRCode logo={Images.icon} value={JSON.stringify(data)} size={200} />
       </View>
     );
   }

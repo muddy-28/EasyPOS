@@ -20,6 +20,7 @@ const images = {
   avatar: require('../Images/avatar.png'),
   exp: require('../Images/exp.png'),
   cvv: require('../Images/cvv.png'),
+  icon: require('../Images/icon.png'),
 }
 
 export default images
