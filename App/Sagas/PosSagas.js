@@ -1,5 +1,4 @@
 import { Alert, AsyncStorage } from 'react-native'
-import { NavigationActions, StackActions } from 'react-navigation'
 import { call, put } from 'redux-saga/effects'
 import PosActions from '../Redux/PosRedux'
 
@@ -15,7 +14,6 @@ export function * login(api, action) {
 
     yield AsyncStorage.setItem('user', JSON.stringify(user))
     yield put(PosActions.loginSuccess({user}))
-    yield put(StackActions.reset({index: 0, actions: [NavigationActions.navigate({routeName: 'MainScreen'})]}))
   } else {
     Alert.alert('Error', "Incorrect login. Please check the email and password you entered and try again.", [{text: 'Dismiss'}], {cancelable: false});
     yield put(PosActions.posFailure())
@@ -105,6 +103,20 @@ export function * sendEmail(api, action) {
 
   if (response.ok) {
     yield put(PosActions.posSuccess())
+  } else {
+    yield put(PosActions.posFailure())
+  }
+}
+
+export function * getRegisters(api, action) {
+  const { token } = action
+
+  const response = yield call(api.getRegisters, token)
+  console.log("registers", response)
+
+  if (response.ok) {
+    const registers = response.data.registers
+    yield put(PosActions.setRegisters({ registers }))
   } else {
     yield put(PosActions.posFailure())
   }

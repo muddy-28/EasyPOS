@@ -77,6 +77,7 @@ const pos = (baseURL = config.serverUrl) => {
   const getDiscounts = (token) => api.get('/discounts', null, { headers: { 'ACCESS_TOKEN': token } })
   const postTransactions = (token, params) => api.post('/transactions', params, { headers: {'ACCESS_TOKEN': token } })
   const sendEmail = (token, params) => api.post('/emails', params, { headers: {'ACCESS_TOKEN': token } })
+  const getRegisters = (token) => api.get('/registers', null, { headers: { 'ACCESS_TOKEN': token } })
   // const update = (token, id, param) => api.patch(`users/${id}/`, param, { headers: {'Authorization': token} })
   // const forgotPassword = (param) => api.post('users/forgot_password', param)
 
@@ -88,6 +89,7 @@ const pos = (baseURL = config.serverUrl) => {
     getDiscounts,
     postTransactions,
     sendEmail,
+    getRegisters,
   }
 }
 

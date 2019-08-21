@@ -23,11 +23,11 @@ import ModalConfirm from '../Components/ModalConfirm';
 import ModalPayment from '../Components/ModalPayment';
 import { hexToRgba } from '../Lib/helpers';
 
-const companyIndex = 2;
-
 class MainScreen extends Component {
   constructor (props) {
     super(props)
+
+    const { state: {params} } = this.props.navigation;
 
     const {width, height} = Dimensions.get('window');
     const leftPanelWidth = width * Metrics.bigPanelRate - 2;
@@ -36,6 +36,9 @@ class MainScreen extends Component {
     productWidth = leftPanelWidth / numPerRow;
 
     this.state = {
+      company_id: params.company_id,
+      register_id: params.register_id,
+
       showCategoriesModal: false,
       showAddDiscountModal: false,
       showAddCartModal: false,
@@ -64,7 +67,7 @@ class MainScreen extends Component {
         {kind: 'green', no: '14887', price: 31, name: 'James'},
       ],
       selectedCategoryId: -1,
-      selectedProductId: -1,
+      selectedProduct: {},
       shoppingCart: [],
       totalPrice: 0,
       subTotalPrice: 0,
@@ -86,7 +89,7 @@ class MainScreen extends Component {
   }
 
   async componentWillMount() {
-    this.props.getInventories(this.props.user.token, this.props.user.companies[companyIndex].id);
+    this.props.getInventories(this.props.user.token, this.state.company_id);
     this.props.getCategories(this.props.user.token);
     this.props.getTaxes(this.props.user.token);
     this.props.getDiscounts(this.props.user.token);
@@ -153,12 +156,16 @@ class MainScreen extends Component {
     this.setState({showChargeModal: false})
 
     let inventories = [];
-    this.state.shoppingCart.forEach((sc) => {
-      inventories.push({id: sc.productId, quantity: sc.redNum});
+    let inventory_names = '';
+    this.state.shoppingCart.forEach((sc, index) => {
+      inventories.push({id: sc.product.id, quantity: sc.redNum});
+      let surffix = index == this.state.shoppingCart.length - 1 ? "" : ", ";
+      console.log(sc.product.title);
+      inventory_names += sc.product.title + surffix;
     })
 
     let params = { 
-      company_id: this.props.user.companies[companyIndex].id,
+      company_id: this.state.company_id,
       inventories,
       register_id: 1,
       value: this.state.subTotalPrice.toFixed(2),
@@ -171,7 +178,7 @@ class MainScreen extends Component {
     }
 
     this.props.postTransactions(this.props.user.token, params);
-    this.props.sendEmail(this.props.user.token, {email, message: 'test email'});
+    this.props.sendEmail(this.props.user.token, {email, message: `total: $${params.transaction_total}, inventory item: ${inventory_names}`});
   }
 
   doPayWithCard(card_type, card_number, card_exp, card_cvv, card_amount) {
@@ -179,11 +186,11 @@ class MainScreen extends Component {
 
     let inventories = [];
     this.state.shoppingCart.forEach((sc) => {
-      inventories.push({id: sc.productId, quantity: sc.redNum});
+      inventories.push({id: sc.product.id, quantity: sc.redNum});
     })
 
     let params = { 
-      company_id: this.props.user.companies[companyIndex].id,
+      company_id: this.state.company_id,
       inventories,
       register_id: 1,
       value: this.state.subTotalPrice.toFixed(2),
@@ -206,7 +213,7 @@ class MainScreen extends Component {
 
   getTax() {
     let tax = 0;
-    let taxes = this.props.taxes.filter((t) => t.company_id == this.props.user.companies[companyIndex].id);
+    let taxes = this.props.taxes.filter((t) => t.company_id == this.state.company_id);
     if (taxes.length > 0) {
       tax = parseFloat(taxes[0].tax_value);
     }
@@ -218,9 +225,8 @@ class MainScreen extends Component {
     let tax = this.getTax();
 
     this.state.shoppingCart.forEach((sc) => {
-      const product = this.props.inventories.filter(inv => inv.id == sc.productId)[0];
-      const discount = this.getProductDiscount(product.id);
-      subTotalPrice += parseFloat(product.price) * sc.redNum * (1 - discount / 100);
+      const discount = this.getProductDiscount(sc.product.id);
+      subTotalPrice += parseFloat(sc.product.price) * sc.redNum * (1 - discount / 100);
     })
 
     let overAllDiscountPrice = (this.state.selectedDiscountMethodIndex == 0) ? subTotalPrice * this.state.overAllDiscount / 100 : this.state.overAllDiscount;
@@ -241,11 +247,11 @@ class MainScreen extends Component {
 
     let existIndex = -1;
     shoppingCart.forEach((sc, i) => {
-      if (this.state.selectedProductId == sc.productId) existIndex = i;
+      if (this.state.selectedProduct.id == sc.product.id) existIndex = i;
     });
 
     if (existIndex == -1) {
-      shoppingCart.push({productId: this.state.selectedProductId, redNum: this.state.productNumber, sizeIndex: this.state.selectedProductSizeIndex, colorIndex: this.state.selectedProductColorIndex});
+      shoppingCart.push({product: this.state.selectedProduct, redNum: this.state.productNumber, sizeIndex: this.state.selectedProductSizeIndex, colorIndex: this.state.selectedProductColorIndex});
     } else {
       let exist = shoppingCart[existIndex];
       exist.redNum += this.state.productNumber;
@@ -291,14 +297,14 @@ class MainScreen extends Component {
       return;
     }
 
-    if (this.state.selectedProductId == -1) {
+    if (this.state.selectedProduct.id == undefined) {
       alert("Please select an inventory.");
       return;
     }
 
     const inventories = this.props.inventories.filter((inv) => {
       return  (this.state.selectedCategoryId == -1 ? true : inv.category_id == this.state.selectedCategoryId) && 
-              inv.id == this.state.selectedProductId && 
+              inv.id == this.state.selectedProduct.id && 
               (inv.title.toLowerCase().indexOf(this.state.productSearchString.toLowerCase()) != -1)
     })
 
@@ -338,7 +344,8 @@ class MainScreen extends Component {
   renderLeftPanel() {
     return (
       <ScrollView style={styles.leftPanel}>
-        {this.state.productSelected ? this.state.productsListSelected ? this.renderSmallProducts() : this.renderBigProducts() : this.renderOrders()}
+        {/* {this.state.productSelected ? this.state.productsListSelected ? this.renderSmallProducts() : this.renderBigProducts() : this.renderOrders()} */}
+        {this.state.productSelected ? this.state.productsListSelected ? this.renderSmallProducts() : this.renderBigProducts() : null}
       </ScrollView>
     );
   }
@@ -353,9 +360,9 @@ class MainScreen extends Component {
             return (
               <View 
                 key={'p_' + i.toString()} 
-                style={[styles.productContainer, {width: this.state.productComponentWidth}, this.state.selectedProductId == product.id ? {backgroundColor: hexToRgba(Colors.mainColor, 0.3),} : null]}
+                style={[styles.productContainer, {width: this.state.productComponentWidth}, this.state.selectedProduct.id == product.id ? {backgroundColor: hexToRgba(Colors.mainColor, 0.3),} : null]}
               >
-                <ProductBig productImage={product.image} productLabel={product.title} onPress={() => this.setState({selectedProductId: product.id})} />
+                <ProductBig productImage={product.image} productLabel={product.title} onPress={() => this.setState({selectedProduct: product})} />
               </View>
             );
           })
@@ -377,28 +384,6 @@ class MainScreen extends Component {
         </View>
       );
     })
-  }
-
-  renderOrders() {
-    // return (
-    //   <View style={styles.ordersContainer}>
-    //     {
-    //       this.state.orders.map((os, i) => {
-    //         return (
-    //           <View key={'orders_row_' + i.toString()} style={styles.ordersRow}>
-    //             {os.map((order, index) => {
-    //               return (
-    //                 <View key={'order_' + index.toString()} style={styles.order}>
-    //                   <OrderCard order={order} />
-    //                 </View>
-    //               );
-    //             })}
-    //           </View>
-    //         );
-    //       })
-    //     }
-    //   </View>
-    // );
   }
 
   renderRightPanel() {
@@ -437,21 +422,20 @@ class MainScreen extends Component {
     return (
       <ScrollView style={[styles.commonPart, styles.cashiersPart]}>
         {this.state.shoppingCart.map((sc, index) => {
-          const product = this.props.inventories.filter(inv => inv.id == sc.productId)[0];
-          const discount = this.getProductDiscount(product.id);
+          const discount = this.getProductDiscount(sc.product.id);
 
           return (
             <View key={'cashier_' + index.toString()} style={styles.cashierRow}>
               <View style={styles.cashierImageContainer}>
-                <Image source={product.image && product.image.url ? {uri: product.image.url} : Images.product} resizeMode="cover" style={styles.cashierImage} />
+                <Image source={sc.product.image && sc.product.image.url ? {uri: sc.product.image.url} : Images.product} resizeMode="cover" style={styles.cashierImage} />
                 {sc.redNum > 1 ? <View style={styles.cashierRedNumContainer}><Text style={styles.cashierRedNum}>{sc.redNum}</Text></View> : null}
               </View>
               <View style={[styles.cashierRightContainer, index == this.state.shoppingCart.length - 1 ? styles.cashierLastRightContainer : null]}>
                 <View style={styles.cashierInfoContainer}>
-                  <Text style={styles.cashierName}>{product.title}</Text>
-                  <Text style={styles.cashierDescription}>{product.description_of_item}</Text>
+                  <Text style={styles.cashierName}>{sc.product.title}</Text>
+                  <Text style={styles.cashierDescription}>{sc.product.description_of_item}</Text>
                 </View>
-                <Text style={styles.cashierPrice}>{'$' + (parseFloat(product.price) * sc.redNum * (1 - discount / 100)).toFixed(2)}</Text>
+                <Text style={styles.cashierPrice}>{'$' + (parseFloat(sc.product.price) * sc.redNum * (1 - discount / 100)).toFixed(2)}</Text>
               </View>
             </View>
           );
@@ -525,7 +509,7 @@ class MainScreen extends Component {
   renderAddCartModal() {
     if (!this.state.showAddCartModal) return;
 
-    const product = this.props.inventories.filter(inv => inv.id == this.state.selectedProductId)[0];
+    const product = this.state.selectedProduct;
     const discount = this.getProductDiscount(product.id);
 
     return (
@@ -564,7 +548,7 @@ class MainScreen extends Component {
       <ModalPayment
         visible={this.state.showPaymentModal}
         totalPrice={this.state.totalPrice}
-        company_name={this.props.user.companies[companyIndex].name_of_company}
+        company_name={this.props.user.companies.filter(c => c.id == this.state.company_id)[0].name_of_company}
         fcmToken={this.fcmToken}
         onClose={() => this.setState({showPaymentModal: false})}
         selectedTabIndex={this.state.paymentMethodSelectedIndex}
@@ -612,7 +596,7 @@ class MainScreen extends Component {
     );
   }
 
-  render () {
+  render() {
     return (
       <View style={styles.container}>
         {this.renderHeader()}
@@ -636,8 +620,6 @@ class MainScreen extends Component {
 
 const mapStateToProps = ({ pos }) => {
   return {
-    fetching: pos.fetching,
-    error: pos.error,
     user: pos.user,
     inventories: pos.inventories,
     categories: pos.categories,
@@ -750,3 +732,27 @@ export default connect(mapStateToProps, mapDispatchToProps)(MainScreen)
       </View>
     );
   }*/
+
+  
+  /*renderOrders() {
+    return (
+      <View style={styles.ordersContainer}>
+        {
+          this.state.orders.map((os, i) => {
+            return (
+              <View key={'orders_row_' + i.toString()} style={styles.ordersRow}>
+                {os.map((order, index) => {
+                  return (
+                    <View key={'order_' + index.toString()} style={styles.order}>
+                      <OrderCard order={order} />
+                    </View>
+                  );
+                })}
+              </View>
+            );
+          })
+        }
+      </View>
+    );
+  }*/
+

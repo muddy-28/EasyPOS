@@ -2,12 +2,14 @@ import React, { Component } from 'react'
 import { View, ScrollView, Text, TextInput, TouchableOpacity, Image, Dimensions, AsyncStorage } from 'react-native'
 import { connect } from 'react-redux'
 import firebase from 'react-native-firebase'
+import { NavigationActions, StackActions } from 'react-navigation'
 
 // Styles
 import styles from './Styles/LoginScreenStyle'
 import PosAction from '../Redux/PosRedux'
 import { Images, Colors } from '../Themes'
 import { shadeColor } from '../Lib/helpers';
+import ModalRegister from '../Components/ModalRegister';
 
 const dimensions = Dimensions.get('window');
 const rate = 0.48;
@@ -31,11 +33,27 @@ class LoginScreen extends Component {
       password: 'qwerasdf',
       isEmailError: false, 
       isPasswordError: false,
+
+      showModalRegister: false,
+      showModalEnterCode: false,
     }
   }
 
   async componentDidMount() {
     await this.checkPermission();
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.user.email && this.props.user.email != nextProps.user.email) {
+      this.props.getRegisters(nextProps.user.token);
+    }
+    if (this.props.registers != nextProps.registers) {
+      this.setState({ showModalRegister: true });
+    }
+  }
+
+  componentWillUnmount() {
+    this.setState({ showModalRegister: false, showModalEnterCode: false })
   }
 
   async createNotificationListeners() {
@@ -131,12 +149,29 @@ class LoginScreen extends Component {
     this.props.login(this.state.email, this.state.password);
   }
 
+  onClickOkay = (companyId, registerId) => {
+    this.setState({showModalRegister: false})
+    this.props.goMainScreen(companyId, registerId);
+  }
+
+  renderModalRegister() {
+    return (
+      <ModalRegister
+        visible={this.state.showModalRegister}
+        companies={this.props.user.companies}
+        registers={this.props.registers}
+        onClickOkay={(company_id, register_id) => this.onClickOkay(company_id, register_id)}
+      />
+    )
+  }
+
   render () {
     const { logoWidth, logoHeight, screenMarginTop, isEmailError, isPasswordError } = this.state;
     const disabledLogin = isEmailError || isPasswordError;
 
     return (
       <ScrollView style={[styles.container, styles.screenContainer]}>
+        {this.renderModalRegister()}
         <View style={[styles.logoImageContainer, {marginTop: screenMarginTop}]}>
           <Image source={Images.logo} style={{width: logoWidth, height: logoHeight}} resizeMode='stretch' />
         </View>
@@ -189,13 +224,16 @@ class LoginScreen extends Component {
 
 const mapStateToProps = ({ pos }) => {
   return {
-    error: pos.error,
+    user: pos.user,
+    registers: pos.registers,
   }
 }
 
 const mapDispatchToProps = (dispatch) => {
   return {
     login: (email, password) => dispatch(PosAction.loginRequest(email, password)),
+    getRegisters: (token) => dispatch(PosAction.getRegisters(token)),
+    goMainScreen: (company_id, register_id) => dispatch(StackActions.reset({index: 0, actions: [NavigationActions.navigate({routeName: 'MainScreen', params: {company_id, register_id}})]})),
   }
 }
 

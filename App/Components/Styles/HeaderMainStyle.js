@@ -28,16 +28,15 @@ export default StyleSheet.create({
     width: rightPanelWidth,
   },
   buttonsContainer: {
-    flexDirection: 'row'
+    flexDirection: 'row',
+    // width: 46,
   },
   iconContainer: {
     marginRight: 16,
   },
   leftButtons: {
-
   },
   rightButtons: {
-
   },
   button: {
     marginTop: 8,
@@ -78,7 +77,7 @@ export default StyleSheet.create({
     paddingLeft: 4,
     borderRadius: 4,
     backgroundColor: 'white',
-    width: 335,
+    width: 240,
     height: 30,
   },
   searchInputStyle: {

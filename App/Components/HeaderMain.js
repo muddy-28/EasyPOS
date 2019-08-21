@@ -38,7 +38,6 @@ export default class HeaderMain extends Component {
       <SearchBar
         placeholder="Search Product"
         autoCapitalize='none'
-        // searchIcon={false}
         placeholderTextColor={Colors.text1}
         value={this.props.searchString}
         onChangeText={(str) => this.props.onChangeSearchText(str)}
@@ -70,16 +69,16 @@ export default class HeaderMain extends Component {
           </View>
           <View style={[styles.buttonsContainer, styles.rightButtons]}>
             {this.props.searchSelected ? this.renderSearchTextBox() : this.renderSearchIcon()}
-            {this.props.productSelected ? 
+            {/* {this.props.productSelected ? 
               <TouchableOpacity disabled={true} onPress={() => this.props.onClickAddInventory()} style={[styles.buttonsContainer, styles.rightButtons]}>
                 <CustomIcon name="add" />
               </TouchableOpacity>
-            : null}
+            : null} */}
           </View>
         </View>
         <View style={[styles.partContainer, styles.rightPart]}>
-          <TouchableOpacity disabled={true} onPress={() => this.props.onClickList()} style={[styles.buttonsContainer, styles.leftButtons]}>
-            <CustomIcon name="list" />
+          <TouchableOpacity disabled={true} onPress={() => this.props.onClickList()} style={[styles.buttonsContainer, styles.leftButtons, {width: 46}]}>
+            {/* <CustomIcon name="list" /> */}
           </TouchableOpacity>
           <View style={styles.rightTextContainer}>
             <Text style={styles.rightText}>Cart ({this.props.cartNum.toString()})</Text>
