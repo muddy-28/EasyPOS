@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { ScrollView, Text, View, TouchableOpacity, Image, AsyncStorage, Alert, Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import firebase from 'react-native-firebase'
+import { DrawerActions } from 'react-navigation'
 import { connect } from 'react-redux';
 
 // Styles
@@ -27,7 +28,7 @@ class MainScreen extends Component {
   constructor (props) {
     super(props)
 
-    const { state: {params} } = this.props.navigation;
+    const { state: {params} } = this.props.navigation.dangerouslyGetParent();
 
     const {width, height} = Dimensions.get('window');
     const leftPanelWidth = width * Metrics.bigPanelRate - 2;
@@ -284,6 +285,10 @@ class MainScreen extends Component {
     });
   }
 
+  onClickMenu() {
+    this.props.navigation.dispatch(DrawerActions.openDrawer());
+  }
+
   onClickExpand() {
     this.showOneModal('category');
     this.setState({
@@ -327,6 +332,7 @@ class MainScreen extends Component {
         productSelected={this.state.productSelected}
         searchSelected={this.state.searchSelected} 
         searchString={this.state.productSearchString}
+        onClickMenu={() => this.onClickMenu()}
         onClickProduct={() => this.setState({productSelected: true})} 
         onClickOrders={() => this.setState({productSelected: false})} 
         onClickSearch={() => this.setState({searchSelected: true})}

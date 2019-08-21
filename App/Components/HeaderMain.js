@@ -12,6 +12,7 @@ export default class HeaderMain extends Component {
   static propTypes = {
     productSelected: PropTypes.bool,
     searchSelected: PropTypes.bool,
+    onClickMenu: PropTypes.func,
     onClickProduct: PropTypes.func,
     onClickOrders: PropTypes.func,
     onClickSearch: PropTypes.func,
@@ -54,9 +55,9 @@ export default class HeaderMain extends Component {
       <View style={styles.container}>
         <View style={[styles.partContainer, styles.leftPart, {borderColor: shadeColor(Colors.mainColor, -10)}]}>
           <View style={[styles.buttonsContainer, styles.leftButtons]}>
-            <View style={styles.iconContainer}>
+            <TouchableOpacity style={styles.iconContainer} onPress={() => this.props.onClickMenu()}>
               <CustomIcon name="menu" />
-            </View>
+            </TouchableOpacity>
             <TouchableOpacity onPress={() => this.props.onClickProduct()} style={[styles.button, this.props.productSelected ? styles.selectedButton : null]}>
               <Text style={[styles.buttonText, this.props.productSelected ? styles.selectedButtonText : null]}>Product</Text>
               <TouchableOpacity onPress={() => this.props.onClickExpand()} style={styles.expandIcon}>

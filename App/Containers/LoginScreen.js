@@ -151,7 +151,7 @@ class LoginScreen extends Component {
 
   onClickOkay = (companyId, registerId) => {
     this.setState({showModalRegister: false})
-    this.props.goMainScreen(companyId, registerId);
+    this.props.goMenuScreen(companyId, registerId);
   }
 
   renderModalRegister() {
@@ -233,7 +233,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     login: (email, password) => dispatch(PosAction.loginRequest(email, password)),
     getRegisters: (token) => dispatch(PosAction.getRegisters(token)),
-    goMainScreen: (company_id, register_id) => dispatch(StackActions.reset({index: 0, actions: [NavigationActions.navigate({routeName: 'MainScreen', params: {company_id, register_id}})]})),
+    goMenuScreen: (company_id, register_id) => dispatch(StackActions.reset({index: 0, actions: [NavigationActions.navigate({routeName: 'MenuScreen', params: {company_id, register_id}})]})),
   }
 }
 
