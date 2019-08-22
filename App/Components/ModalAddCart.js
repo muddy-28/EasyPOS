@@ -56,44 +56,6 @@ export default class ModalAddCart extends Component {
                 <Text style={styles.productAvailableNumber}>{this.props.productAvailableNumber}</Text>
               </View>
             </View>
-            <Text style={styles.size}>Size</Text>
-            <View style={styles.buttonsRow}>
-              {this.props.productSizes.map((size, i) => {
-                return (
-                  <TouchableOpacity 
-                    key={'size_' + i.toString()} 
-                    style={[styles.button, styles.commonRow, this.props.productSelectedSizeIndex == i ? styles.selectedButton : null]}
-                    onPress={() => this.props.onChangeProductSelectedSizeIndex(i)}
-                  >
-                    <Text style={[this.props.productSelectedSizeIndex == i ? styles.selectedButtonText : styles.buttonText]}>{size}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-            <Text style={[styles.size, styles.color]}>Color</Text>
-            {
-              this.props.productColors.map((ac, ai) => {
-                if (ai % numPerRow == 0) {
-                  return (
-                    <View key={"a_" + ai.toString()} style={styles.buttonsRow}>
-                      {
-                        this.props.productColors.filter((bc, bi) => bi >= ai && bi < ai + numPerRow).map((cc, ci) => {
-                          return (
-                            <TouchableOpacity 
-                              key={'color_' + ci.toString()} 
-                              style={[styles.button, styles.commonRow, this.props.productSelectedColorIndex == (ai + ci) ? styles.selectedButton : null]}
-                              onPress={() => this.props.onChangeProductSelectedColorIndex(ai + ci)}
-                            >
-                              <Text style={[this.props.productSelectedColorIndex == (ai + ci) ? styles.selectedButtonText : styles.buttonText]}>{cc}</Text>
-                            </TouchableOpacity>
-                          )
-                        })
-                      }
-                    </View>
-                  )
-                }
-              })
-            }
           </View>
         </View>
       </Modal>

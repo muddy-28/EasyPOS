@@ -17,7 +17,8 @@ const { Types, Creators } = createActions({
   setTaxes: ['taxes'],
   getDiscounts: ['token'],
   setDiscounts: ['discounts'],
-  postTransactions: ['token', 'params'],
+  postTransaction: ['token', 'params'],
+  postTransactionSuccess: ['transaction'],
   sendEmail: ['token', 'params'],
   getRegisters: ['token'],
   setRegisters: ['registers'],
@@ -39,6 +40,7 @@ export const INITIAL_STATE = Immutable({
   taxes: [],
   discounts: [],
   registers: [],
+  createdTransaction: null,
 })
 
 /* ------------- Selectors ------------- */
@@ -82,6 +84,12 @@ export const setDiscounts = (state, { discounts }) =>
 export const setRegisters = (state, { registers }) =>
   state.merge({ fetching: false, registers: registers.registers, error: null })
 
+export const createTransactionRequest = (state, { data }) => 
+  state.merge({ fetching: true, data, payload: null, createdTransaction: null })
+
+export const createTransactionSuccess = (state, { transaction }) => 
+  state.merge({ fetching: false, createdTransaction: transaction.transaction, error: null })
+
 /* ------------- Hookup Reducers To Types ------------- */
 
 export const reducer = createReducer(INITIAL_STATE, {
@@ -98,7 +106,8 @@ export const reducer = createReducer(INITIAL_STATE, {
   [Types.SET_TAXES]: setTaxes,
   [Types.GET_DISCOUNTS]: request,
   [Types.SET_DISCOUNTS]: setDiscounts,
-  [Types.POST_TRANSACTIONS]: request,
+  [Types.POST_TRANSACTION]: createTransactionRequest,
+  [Types.POST_TRANSACTION_SUCCESS]: createTransactionSuccess,
   [Types.SEND_EMAIL]: request,
   [Types.GET_REGISTERS]: request,
   [Types.SET_REGISTERS]: setRegisters,

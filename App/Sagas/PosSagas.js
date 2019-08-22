@@ -75,21 +75,23 @@ export function * getDiscounts(api, action) {
   console.log("discounts", response)
 
   if (response.ok) {
-    const discounts = response.data.discounts
+    const discounts = response.data.discounts.filter(d => d.on_off == "true" || d.on_off == "1")
     yield put(PosActions.setDiscounts({ discounts }))
   } else {
     yield put(PosActions.posFailure())
   }
 }
 
-export function * postTransactions(api, action) {
+export function * postTransaction(api, action) {
   const { token, params } = action
 
-  const response = yield call(api.postTransactions, token, {transaction: params})
+  const response = yield call(api.postTransaction, token, {transaction: params})
   console.log("post transaction", response)
 
   if (response.ok) {
-    yield put(PosActions.posSuccess())
+    const transaction = response.data.transaction
+
+    yield put(PosActions.postTransactionSuccess({ transaction }))
   } else {
     yield put(PosActions.posFailure())
   }

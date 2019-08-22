@@ -77,6 +77,13 @@ class MainScreen extends Component {
     this.createNotificationListeners();
   }
 
+  async componentWillReceiveProps(nextProps) {
+    if (nextProps.createdTransaction) {
+      await this.setState({ shoppingCart: [], selectedProduct: {} });
+      this.calcTotalPrice();
+    }
+  }
+
   componentWillUnmount() {
     this.notificationListener();
     this.notificationOpenedListener();
@@ -86,12 +93,13 @@ class MainScreen extends Component {
     /*
     * Triggered when a particular notification has been received in foreground
     * */
-    this.notificationListener = firebase.notifications().onNotification((notification) => {
+    this.notificationListener = firebase.notifications().onNotification(async (notification) => {
       console.log("zzz", "received");
       const { title, body } = notification;
       this.showAlert(title, body);
       if (title === 'Succeed') {
-        this.setState({showPaymentModal: false, shoppingCart: []});
+        await this.setState({showPaymentModal: false, shoppingCart: [], selectedProduct: {}});
+        this.calcTotalPrice();
       }
     });
   
@@ -140,14 +148,13 @@ class MainScreen extends Component {
     this.state.shoppingCart.forEach((sc, index) => {
       inventories.push({id: sc.product.id, quantity: sc.redNum});
       let surffix = index == this.state.shoppingCart.length - 1 ? "" : ", ";
-      console.log(sc.product.title);
       inventory_names += sc.product.title + surffix;
     })
 
     let params = { 
       company_id: this.state.company_id,
       inventories,
-      register_id: 1,
+      register_id: this.state.register_id,
       value: this.state.subTotalPrice.toFixed(2),
       tax_value: this.state.taxPrice.toFixed(2),
       discount_value: this.state.overAllDiscount.toFixed(2),
@@ -157,7 +164,7 @@ class MainScreen extends Component {
       transaction_mode: "cash",
     }
 
-    this.props.postTransactions(this.props.user.token, params);
+    this.props.postTransaction(this.props.user.token, params);
     this.props.sendEmail(this.props.user.token, {email, message: `total: $${params.transaction_total}, inventory item: ${inventory_names}`});
   }
 
@@ -172,7 +179,7 @@ class MainScreen extends Component {
     let params = { 
       company_id: this.state.company_id,
       inventories,
-      register_id: 1,
+      register_id: this.state.register_id,
       value: this.state.subTotalPrice.toFixed(2),
       tax_value: this.state.taxPrice.toFixed(2),
       discount_value: this.state.overAllDiscount.toFixed(2),
@@ -188,7 +195,7 @@ class MainScreen extends Component {
       "card-cvv": card_cvv,
     }
 
-    this.props.postTransactions(this.props.user.token, params);
+    this.props.postTransaction(this.props.user.token, params);
   }
 
   getTax() {
@@ -290,7 +297,7 @@ class MainScreen extends Component {
     }
 
     this.showOneModal('addCart');
-    this.setState({productNumber: 1, selectedProductSizeIndex: 1, selectedProductColorIndex: 1})
+    this.setState({productNumber: 1})
   }
 
   renderHeader() {
@@ -557,6 +564,7 @@ const mapStateToProps = ({ pos }) => {
     categories: pos.categories,
     taxes: pos.taxes,
     discounts: pos.discounts,
+    createdTransaction: pos.createdTransaction,
   }
 }
 
@@ -566,7 +574,7 @@ const mapDispatchToProps = (dispatch) => {
     getCategories: (token) => dispatch(PosAction.getCategories(token)),
     getTaxes: (token) => dispatch(PosAction.getTaxes(token)),
     getDiscounts: (token) => dispatch(PosAction.getDiscounts(token)),
-    postTransactions: (token, params) => dispatch(PosAction.postTransactions(token, params)),
+    postTransaction: (token, params) => dispatch(PosAction.postTransaction(token, params)),
     sendEmail: (token, params) => dispatch(PosAction.sendEmail(token, params)),
   }
 }

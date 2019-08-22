@@ -1,11 +1,12 @@
-import React, { Component } from 'react';
-import { View, ScrollView, Text, TouchableOpacity, Image } from 'react-native';
-import { connect } from 'react-redux';
+import React, { Component } from 'react'
+import { View, ScrollView, Text, TouchableOpacity, Image } from 'react-native'
+import { DrawerActions } from 'react-navigation'
+import { connect } from 'react-redux'
 
 // Styles
-import styles from './Styles/ActivitesScreenStyle';
-import HeaderInformation from '../Components/HeaderInformation';
-import { Images } from '../Themes';
+import styles from './Styles/ActivitesScreenStyle'
+import HeaderInformation from '../Components/HeaderInformation'
+import { Images } from '../Themes'
 
 class ActivitesScreen extends Component {
   constructor (props) {
@@ -32,19 +33,21 @@ class ActivitesScreen extends Component {
     }
   }
 
+  componentWillMount() {
+
+  }
+
+  onClickMenu() {
+    this.props.navigation.dispatch(DrawerActions.openDrawer());
+  }
+
   renderHeader() {
     return (
       <HeaderInformation
         firstTitle='All Receipts'
         secondTitle='Information'
         firstLeftIcon="menu"
-        firstRightIcon="search"
-        secondLeftIcon=""
-        secondRightIcon="mail"
-        onClickFirstLeftButton={() => this.setState()}
-        onClickFirstRightButton={() => this.goAddEmployeeScreen()}
-        onClickSecondLeftButton={() => this.setState({})}
-        onClickSecondRightButton={() => this.setState({showPasscodeModal: true})}
+        onClickFirstLeftButton={() => this.onClickMenu()}
       />
     );
   }
@@ -190,8 +193,9 @@ class ActivitesScreen extends Component {
   }
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = ({pos}) => {
   return {
+    
   }
 }
 
