@@ -46,25 +46,10 @@ class MainScreen extends Component {
       showConfirmModal: false,
       showPaymentModal: false,
       showAddInventoryModal: false,
-      productSelected: true,
-      productsListSelected: false,
       searchSelected: false,
       productSearchString: '',
       productComponentWidth: productWidth,
-      orders: [
-        {kind: 'green', no: '14876', price: 28, name: 'James'},
-        {kind: 'orange', no: '14877', price: 24, name: 'John'},
-        {kind: 'orange', no: '14878', price: 35, name: 'John'},
-        {kind: 'orange', no: '14879', price: 42, name: 'John'},
-        {kind: 'green', no: '14880', price: 28, name: 'James'},
-        {kind: 'green', no: '14881', price: 43, name: 'James'},
-        {kind: 'green', no: '14882', price: 21, name: 'James'},
-        {kind: 'green', no: '14883', price: 26, name: 'James'},
-        {kind: 'blue', no: '14884', price: 38, name: ''},
-        {kind: 'orange', no: '14885', price: 32, name: ''},
-        {kind: 'blue', no: '14886', price: 28, name: ''},
-        {kind: 'green', no: '14887', price: 31, name: 'James'},
-      ],
+      
       selectedCategoryId: -1,
       selectedProduct: {},
       shoppingCart: [],
@@ -77,10 +62,6 @@ class MainScreen extends Component {
       overAllDiscount: 0,
       // add cart dialog
       productNumber: 1,
-      productSizes: ['S', 'M', 'X', 'L', 'XL', 'XXL'],
-      productColors: ['Red', 'Green', 'Blue', 'White', 'Yellow', 'Orange', 'Violet', 'Purple', 'Brown', 'Black', 'Gold', 'Silver'],
-      selectedProductSizeIndex: 1,
-      selectedProductColorIndex: 1,
       // payment dialog
       paymentMethodSelectedIndex: 0,
       cashAmount: 0,
@@ -261,13 +242,9 @@ class MainScreen extends Component {
     this.calcTotalPrice();
   }
 
-  addInventory() {
-    this.setState({showAddInventoryModal: false});
-  }
-
   getProductDiscount(id) {
     const discounts = this.props.discounts.filter(d => d.inventory_id == id);
-    return discounts.length > 0 && discounts[0].on_off == '1' ? parseFloat(discounts[0].discount_value) : 0;
+    return discounts.length > 0 ? parseFloat(discounts[0].discount_value) : 0;
   }
 
   showOneModal(name) {
@@ -279,7 +256,6 @@ class MainScreen extends Component {
       showChargeModal: name == 'charge',
       showConfirmModal: name == 'confirm',
       showPaymentModal: name == 'payment',
-      showAddInventoryModal: name == 'addInventory',
     });
   }
 
@@ -289,9 +265,6 @@ class MainScreen extends Component {
 
   onClickExpand() {
     this.showOneModal('category');
-    this.setState({
-      productSelected: true,
-    })
   }
 
   onClickAddCart() {
@@ -320,26 +293,17 @@ class MainScreen extends Component {
     this.setState({productNumber: 1, selectedProductSizeIndex: 1, selectedProductColorIndex: 1})
   }
 
-  onClickAddInventory() {
-    this.showOneModal('addInventory');
-  }
-
   renderHeader() {
     return (
       <HeaderMain 
-        productSelected={this.state.productSelected}
         searchSelected={this.state.searchSelected} 
         searchString={this.state.productSearchString}
         onClickMenu={() => this.onClickMenu()}
-        onClickProduct={() => this.setState({productSelected: true})} 
-        onClickOrders={() => this.setState({productSelected: false})} 
         onClickSearch={() => this.setState({searchSelected: true})}
         onClickExpand={() => this.onClickExpand()}
-        onClickList={() => this.setState({productsListSelected: !this.state.productsListSelected})}
         onChangeSearchText={(productSearchString) => this.setState({productSearchString})}
         onClearSearchText={()=>this.setState({searchSelected: false, productSearchString: ''})}
         onClickAddCart={() => this.onClickAddCart()}
-        onClickAddInventory={() => this.onClickAddInventory()}
         cartNum={this.state.shoppingCart.length}
       />
     );
@@ -348,8 +312,7 @@ class MainScreen extends Component {
   renderLeftPanel() {
     return (
       <ScrollView style={styles.leftPanel}>
-        {/* {this.state.productSelected ? this.state.productsListSelected ? this.renderSmallProducts() : this.renderBigProducts() : this.renderOrders()} */}
-        {this.state.productSelected ? this.state.productsListSelected ? this.renderSmallProducts() : this.renderBigProducts() : null}
+        {this.renderBigProducts()}
       </ScrollView>
     );
   }
@@ -373,21 +336,6 @@ class MainScreen extends Component {
         }
       </View>
     );
-  }
-
-  renderSmallProducts() {
-    const inventories = this.props.inventories.filter((inv) => (this.state.selectedCategoryId == -1 ? true : inv.category_id == this.state.selectedCategoryId) && (inv.title.toLowerCase().indexOf(this.state.productSearchString.toLowerCase()) != -1));
-
-    return inventories.map((product, index) => {
-      return (
-        <View 
-          key={'product_' + index.toString()} 
-          style={index == 0 ? styles.firstSmallProduct : index == inventories.length - 1 ? styles.lastSmallProduct : null}
-        >
-          <ProductSmall productImage={product.image} productLabel={product.title} productNum={product.sub_quantity} />
-        </View>
-      );
-    })
   }
 
   renderRightPanel() {
@@ -523,26 +471,8 @@ class MainScreen extends Component {
         onClickAdd={() => this.addCart()}
         productNumber={this.state.productNumber}
         onProcProductNumber={(st) => this.setState({productNumber: this.state.productNumber + st})}
-        productSizes={this.state.productSizes}
-        productColors={this.state.productColors}
         productAvailableNumber={product.sub_quantity}
         productPrice={parseFloat(product.price) * this.state.productNumber * (1 - discount / 100)}
-        selectedProductSizeIndex={this.state.selectedProductSizeIndex}
-        selectedProductColorIndex={this.state.selectedProductColorIndex}
-        onChangeProductSelectedSizeIndex={(index) => this.setState({selectedProductSizeIndex: index})}
-        onChangeProductSelectedColorIndex={(index) => this.setState({selectedProductColorIndex: index})}
-      />
-    );
-  }
-
-  renderAddInventoryModal() {
-    if (!this.state.showAddInventoryModal) return;
-
-    return (
-      <ModalAddInventory
-        visible={this.state.showAddInventoryModal}
-        onClose={() => this.setState({showAddInventoryModal: false})}
-        onClickAdd={() => this.addInventory()}
       />
     );
   }
@@ -570,7 +500,6 @@ class MainScreen extends Component {
         // title='$48.20 Change out of $200.00'
         title={'$' + (parseFloat(this.state.cashAmount) - this.state.totalPrice).toFixed(2) + ' Change out of $' + this.state.totalPrice.toFixed(2)}
         onClose={() => this.setState({showChargeModal: false, showPaymentModal: true})}
-        // onFinish={() => this.setState({showChargeModal: false, showAlertModal: true})}
         onFinish={(email) => this.doPayWithCash(email)}
       />
     );
@@ -581,7 +510,7 @@ class MainScreen extends Component {
       <ModalAlert
         visible={this.state.showAlertModal}
         texts={["There is no network connection.", "Email will be sent later."]}
-        onClose={() => this.setState({showAlertModal: false, showConfirmModal: true})}
+        onClose={() => this.setState({showAlertModal: false})}
       />
     );
   }
@@ -612,7 +541,6 @@ class MainScreen extends Component {
         {this.renderChargeModal()}
         {this.renderAlertModal()}
         {this.renderConfirmModal()}
-        {this.renderAddInventoryModal()}
         <View style={styles.bodyContainer}>
           {this.renderLeftPanel()}
           {this.renderRightPanel()}

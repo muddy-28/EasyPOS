@@ -28,7 +28,7 @@ export default class HeaderMain extends Component {
 
   renderSearchIcon() {
     return (
-      <TouchableOpacity onPress={()=> this.props.onClickSearch()}>
+      <TouchableOpacity onPress={() => this.props.onClickSearch()}>
         <CustomIcon name="search" />
       </TouchableOpacity>
     );
@@ -42,7 +42,7 @@ export default class HeaderMain extends Component {
         placeholderTextColor={Colors.text1}
         value={this.props.searchString}
         onChangeText={(str) => this.props.onChangeSearchText(str)}
-        onClear={()=>this.props.onClearSearchText()}
+        onClear={() => this.props.onClearSearchText()}
         inputStyle={styles.searchInputStyle}
         containerStyle={styles.searchContainer}
         inputContainerStyle={styles.searchInputContainer}
@@ -58,7 +58,7 @@ export default class HeaderMain extends Component {
             <TouchableOpacity style={styles.iconContainer} onPress={() => this.props.onClickMenu()}>
               <CustomIcon name="menu" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => this.props.onClickProduct()} style={[styles.button, this.props.productSelected ? styles.selectedButton : null]}>
+            {/* <TouchableOpacity onPress={() => this.props.onClickProduct()} style={[styles.button, this.props.productSelected ? styles.selectedButton : null]}>
               <Text style={[styles.buttonText, this.props.productSelected ? styles.selectedButtonText : null]}>Product</Text>
               <TouchableOpacity onPress={() => this.props.onClickExpand()} style={styles.expandIcon}>
                 <Icon name='chevron-down' size={24} color={this.props.productSelected ? Colors.mainColor : 'white'} />
@@ -66,8 +66,9 @@ export default class HeaderMain extends Component {
             </TouchableOpacity>
             <TouchableOpacity disabled={true} onPress={() => this.props.onClickOrders()} style={[styles.button, this.props.productSelected ? null : styles.selectedButton]}>
               <Text style={[styles.buttonText, this.props.productSelected ? null : styles.selectedButtonText]}>Orders</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
+          <View style={styles.button}><Text style={styles.buttonText}>Inventories</Text></View>
           <View style={[styles.buttonsContainer, styles.rightButtons]}>
             {this.props.searchSelected ? this.renderSearchTextBox() : this.renderSearchIcon()}
             {/* {this.props.productSelected ? 
