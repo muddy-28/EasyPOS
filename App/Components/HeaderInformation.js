@@ -1,8 +1,11 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { View, Text, TouchableOpacity } from 'react-native';
-import styles from './Styles/HeaderInformationStyle';
-import CustomIcon from './CustomIcon';
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+import { View, Text, TouchableOpacity } from 'react-native'
+
+import styles from './Styles/HeaderInformationStyle'
+import CustomIcon from './CustomIcon'
+import { shadeColor } from '../Lib/helpers'
+import { Colors } from '../Themes'
 
 export default class HeaderInformation extends Component {
   static propTypes = {
@@ -21,7 +24,7 @@ export default class HeaderInformation extends Component {
   render () {
     return (
       <View style={styles.container}>
-        <View style={[styles.partContainer, styles.leftPart]}>
+        <View style={[styles.partContainer, styles.leftPart, {borderColor: shadeColor(Colors.mainColor, -10)}]}>
           <TouchableOpacity onPress={() => this.props.onClickFirstLeftButton()}>
             <CustomIcon name={this.props.firstLeftIcon} />
           </TouchableOpacity>

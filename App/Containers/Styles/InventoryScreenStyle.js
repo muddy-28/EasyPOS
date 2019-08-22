@@ -70,10 +70,35 @@ export default StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'flex-end',
   },
+  productQuantityCol: {
+    width: 100,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    marginRight: 8,
+  },
   productImage: {
     width: 42,
     height: 42,
     borderRadius: 21,
+  },
+  discountRow: {
+    marginLeft: 16,
+    width: rightPanelWidth - 16,
+    height: 44,
+    paddingHorizontal: 12,
+  },
+  inventoryLabelCol: {
+    flex: 1,
+  },
+  inventorySkuCol: {
+    flex: 1,
+  },
+  discountLabelCol: {
+    flex: 1,
+  },
+  discountValueCol: {
+    width: 80,
+    textAlign: 'right',
   },
   text1: {
     color: Colors.text1,

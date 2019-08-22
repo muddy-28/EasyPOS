@@ -12,8 +12,6 @@ import { Images, Colors, Metrics } from '../Themes';
 import HeaderMain from '../Components/HeaderMain';
 import ProductBig from '../Components/ProductBig';
 import ProductSmall from '../Components/ProductSmall';
-import OrderCard from '../Components/OrderCard';
-// import ModalCustomers from '../Components/ModalCustomers';
 import ModalCategories from '../Components/ModalCategories';
 import ModalAddDiscount from '../Components/ModalAddDiscount';
 import ModalAddCart from '../Components/ModalAddCart';
