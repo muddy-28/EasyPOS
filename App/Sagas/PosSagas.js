@@ -123,3 +123,18 @@ export function * getRegisters(api, action) {
     yield put(PosActions.posFailure())
   }
 }
+
+export function * getTransactions(api, action) {
+  const { token, params } = action
+
+  const response = yield call(api.getTransactions, token, {transaction: params})
+  console.log("get transactions", response)
+
+  if (response.ok) {
+    const transactions = response.data.transactions
+
+    yield put(PosActions.setTransactions({ transactions }))
+  } else {
+    yield put(PosActions.posFailure())
+  }
+}

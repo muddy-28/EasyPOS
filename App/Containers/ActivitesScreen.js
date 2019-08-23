@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 
 // Styles
 import styles from './Styles/ActivitesScreenStyle'
+import PosAction from '../Redux/PosRedux'
 import HeaderInformation from '../Components/HeaderInformation'
 import { Images } from '../Themes'
 
@@ -12,7 +13,12 @@ class ActivitesScreen extends Component {
   constructor (props) {
     super(props)
 
+    const { state: {params} } = this.props.navigation.dangerouslyGetParent();
+
     this.state = {
+      company_id: params.company_id,
+      register_id: params.register_id,
+
       selectedReceiptItemId: 1,
       receipts: [
         {date: 'Tuesday, 27 May 2014', items: [
@@ -34,7 +40,8 @@ class ActivitesScreen extends Component {
   }
 
   componentWillMount() {
-
+    const token = this.props.user.token;
+    this.props.getTransactions(token, {company_id: this.state.company_id, register_id: this.state.register_id});
   }
 
   onClickMenu() {
@@ -195,12 +202,13 @@ class ActivitesScreen extends Component {
 
 const mapStateToProps = ({pos}) => {
   return {
-    
+    user: pos.user,
   }
 }
 
 const mapDispatchToProps = (dispatch) => {
   return {
+    getTransactions: (token, params) => dispatch(PosAction.getTransactions(token, params)),
   }
 }
 

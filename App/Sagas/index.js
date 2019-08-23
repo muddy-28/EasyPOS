@@ -13,7 +13,7 @@ import { PosTypes } from '../Redux/PosRedux'
 
 import { startup } from './StartupSagas'
 import { getUserAvatar } from './GithubSagas'
-import { login, getInventories, getCategories, getTaxes, getDiscounts, postTransaction, sendEmail, getRegisters } from './PosSagas'
+import { login, getInventories, getCategories, getTaxes, getDiscounts, postTransaction, sendEmail, getRegisters, getTransactions } from './PosSagas'
 
 /* ------------- API ------------- */
 
@@ -40,5 +40,6 @@ export default function * root () {
     takeLatest(PosTypes.POST_TRANSACTION, postTransaction, api_pos),
     takeLatest(PosTypes.SEND_EMAIL, sendEmail, api_pos),
     takeLatest(PosTypes.GET_REGISTERS, getRegisters, api_pos),
+    takeLatest(PosTypes.GET_TRANSACTIONS, getTransactions, api_pos),
   ])
 }

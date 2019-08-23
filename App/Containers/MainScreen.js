@@ -1,26 +1,24 @@
-import React, { Component } from 'react';
-import { ScrollView, Text, View, TouchableOpacity, Image, AsyncStorage, Alert, Dimensions } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import React, { Component } from 'react'
+import { ScrollView, Text, View, TouchableOpacity, Image, AsyncStorage, Alert, Dimensions } from 'react-native'
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import firebase from 'react-native-firebase'
 import { DrawerActions } from 'react-navigation'
-import { connect } from 'react-redux';
+import { connect } from 'react-redux'
 
 // Styles
-import styles from './Styles/MainScreenStyle';
+import styles from './Styles/MainScreenStyle'
 import PosAction from '../Redux/PosRedux'
-import { Images, Colors, Metrics } from '../Themes';
-import HeaderMain from '../Components/HeaderMain';
-import ProductBig from '../Components/ProductBig';
-import ProductSmall from '../Components/ProductSmall';
-import ModalCategories from '../Components/ModalCategories';
-import ModalAddDiscount from '../Components/ModalAddDiscount';
-import ModalAddCart from '../Components/ModalAddCart';
-import ModalAddInventory from '../Components/ModalAddInventory';
-import ModalCharge from '../Components/ModalCharge';
-import ModalAlert from '../Components/ModalAlert';
-import ModalConfirm from '../Components/ModalConfirm';
-import ModalPayment from '../Components/ModalPayment';
-import { hexToRgba } from '../Lib/helpers';
+import { Images, Colors, Metrics } from '../Themes'
+import HeaderMain from '../Components/HeaderMain'
+import ProductBig from '../Components/ProductBig'
+import ModalCategories from '../Components/ModalCategories'
+import ModalAddDiscount from '../Components/ModalAddDiscount'
+import ModalAddCart from '../Components/ModalAddCart'
+import ModalCharge from '../Components/ModalCharge'
+import ModalAlert from '../Components/ModalAlert'
+import ModalConfirm from '../Components/ModalConfirm'
+import ModalPayment from '../Components/ModalPayment'
+import { hexToRgba } from '../Lib/helpers'
 
 class MainScreen extends Component {
   constructor (props) {
