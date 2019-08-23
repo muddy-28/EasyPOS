@@ -8,8 +8,8 @@ import { NavigationActions, StackActions } from 'react-navigation'
 import styles from './Styles/LoginScreenStyle'
 import PosAction from '../Redux/PosRedux'
 import { Images, Colors } from '../Themes'
-import { shadeColor } from '../Lib/helpers';
-import ModalRegister from '../Components/ModalRegister';
+import { shadeColor } from '../Lib/helpers'
+import ModalRegister from '../Components/ModalRegister'
 
 const dimensions = Dimensions.get('window');
 const rate = 0.48;

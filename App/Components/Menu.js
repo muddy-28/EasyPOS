@@ -1,12 +1,11 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types';
-import { View, ScrollView, Text, TouchableOpacity, Image } from 'react-native'
+import PropTypes from 'prop-types'
+import { View, ScrollView, Text, TouchableOpacity } from 'react-native'
 import { DrawerItems } from 'react-navigation'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import { connect } from 'react-redux'
 
 import styles from './Styles/MenuStyle'
-import { Images } from '../Themes'
 import PosAction from '../Redux/PosRedux'
 
 class Menu extends Component {
@@ -16,7 +15,7 @@ class Menu extends Component {
 
   logout() {
     this.props.props.navigation.closeDrawer();
-    // this.props.logout(this.props.student.activation_token);
+    this.props.logout(this.props.user.token);
   }
 
   render () {
@@ -58,7 +57,7 @@ const mapStateToProps = ({ pos }) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    // logout: (token) => dispatch(PosAction.logout(token)),
+    logout: (token) => dispatch(PosAction.logout(token)),
   }
 }
 

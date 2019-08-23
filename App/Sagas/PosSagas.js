@@ -1,5 +1,6 @@
 import { Alert, AsyncStorage } from 'react-native'
 import { call, put } from 'redux-saga/effects'
+import { NavigationActions, StackActions } from 'react-navigation'
 import PosActions from '../Redux/PosRedux'
 
 export function * login(api, action) {
@@ -16,6 +17,21 @@ export function * login(api, action) {
     yield put(PosActions.loginSuccess({user}))
   } else {
     Alert.alert('Error', "Incorrect login. Please check the email and password you entered and try again.", [{text: 'Dismiss'}], {cancelable: false});
+    yield put(PosActions.posFailure())
+  }
+}
+
+export function * logout(api, action) {
+  const { token } = action
+  
+  const response = yield call(api.logout, token)
+  console.log("logout result", response)
+
+  if (response.ok) {
+    const user = {}
+    yield put(StackActions.reset({index: 0, actions: [NavigationActions.navigate({routeName: 'LoginScreen'})]}))
+    yield put(PosActions.loginSuccess({user}))
+  } else {
     yield put(PosActions.posFailure())
   }
 }

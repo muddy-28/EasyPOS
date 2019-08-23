@@ -71,6 +71,7 @@ const pos = (baseURL = config.serverUrl) => {
   })
 
   const login = (param) => api.post('/company_users/signin', param)
+  const logout = (token) => api.get('/company_users/signout', null, { headers: {'ACCESS_TOKEN': token} })
   const getInventories = (token, company_id) => api.get(`/companies/${company_id}/inventory_list`, null, { headers: {'ACCESS_TOKEN': token} })
   const getCategories = (token) => api.get('/categories', null, { headers: {'ACCESS_TOKEN': token} })
   const getTaxes = (token) => api.get('/taxes', null, { headers: { 'ACCESS_TOKEN': token } })
@@ -84,6 +85,7 @@ const pos = (baseURL = config.serverUrl) => {
 
   return {
     login,
+    logout,
     getInventories,
     getCategories,
     getTaxes,

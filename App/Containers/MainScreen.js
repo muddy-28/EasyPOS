@@ -483,11 +483,12 @@ class MainScreen extends Component {
   }
 
   renderPaymentModal() {
+    const company_name = this.props.user.companies.filter(c => c.id == this.state.company_id)[0].name_of_company;
     return (
       <ModalPayment
         visible={this.state.showPaymentModal}
         totalPrice={this.state.totalPrice}
-        company_name={this.props.user.companies.filter(c => c.id == this.state.company_id)[0].name_of_company}
+        company_name={company_name}
         fcmToken={this.fcmToken}
         onClose={() => this.setState({showPaymentModal: false})}
         selectedTabIndex={this.state.paymentMethodSelectedIndex}
