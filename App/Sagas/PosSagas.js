@@ -105,7 +105,7 @@ export function * postTransaction(api, action) {
   console.log("post transaction", response)
 
   if (response.ok) {
-    const transaction = response.data.transaction
+    const transaction = response.data
 
     yield put(PosActions.postTransactionSuccess({ transaction }))
   } else {
@@ -147,7 +147,9 @@ export function * getTransactions(api, action) {
   console.log("get transactions", response)
 
   if (response.ok) {
-    const transactions = response.data.transactions
+    const transactions = response.data.transaction_data.sort((t1, t2) => {
+      return t2.id - t1.id;
+    })
 
     yield put(PosActions.setTransactions({ transactions }))
   } else {

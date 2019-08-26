@@ -77,7 +77,7 @@ class MainScreen extends Component {
 
   async componentWillReceiveProps(nextProps) {
     if (nextProps.createdTransaction) {
-      await this.setState({ shoppingCart: [], selectedProduct: {} });
+      await this.setState({ shoppingCart: [], selectedProduct: {}, overAllDiscount: 0 });
       this.calcTotalPrice();
     }
   }
@@ -96,7 +96,7 @@ class MainScreen extends Component {
       const { title, body } = notification;
       this.showAlert(title, body);
       if (title === 'Succeed') {
-        await this.setState({showPaymentModal: false, shoppingCart: [], selectedProduct: {}});
+        await this.setState({showPaymentModal: false, shoppingCart: [], selectedProduct: {}, overAllDiscount: 0});
         this.calcTotalPrice();
       }
     });
@@ -155,10 +155,10 @@ class MainScreen extends Component {
       register_id: this.state.register_id,
       value: this.state.subTotalPrice.toFixed(2),
       tax_value: this.state.taxPrice.toFixed(2),
-      discount_value: this.state.overAllDiscount.toFixed(2),
+      discount_value: this.state.overAllDiscountPrice.toFixed(2),
       transaction_total: this.state.totalPrice.toFixed(2),
       transaction_type: "cash",
-      "publisher-name": "pnpdemo",
+      // "publisher-name": "pnpdemo",
       transaction_mode: "cash",
     }
 
@@ -180,11 +180,11 @@ class MainScreen extends Component {
       register_id: this.state.register_id,
       value: this.state.subTotalPrice.toFixed(2),
       tax_value: this.state.taxPrice.toFixed(2),
-      discount_value: this.state.overAllDiscount.toFixed(2),
+      discount_value: this.state.overAllDiscountPrice.toFixed(2),
       transaction_total: this.state.totalPrice.toFixed(2),
       transaction_type: "card",
       transaction_mode: "card",
-      "publisher-name": "pnpdemo",
+      // "publisher-name": "pnpdemo",
       // "card-number": card_number,
       "card-number": "3566000020000410",
       "card-name": card_type,

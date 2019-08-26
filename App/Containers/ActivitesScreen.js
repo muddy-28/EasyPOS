@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { View, ScrollView, Text, TouchableOpacity, Image } from 'react-native'
-import { DrawerActions } from 'react-navigation'
+import { DrawerActions, withNavigationFocus } from 'react-navigation'
+import moment from 'moment'
 import { connect } from 'react-redux'
 
 // Styles
@@ -18,34 +19,47 @@ class ActivitesScreen extends Component {
     this.state = {
       company_id: params.company_id,
       register_id: params.register_id,
-
-      selectedReceiptItemId: 1,
-      receipts: [
-        {date: 'Tuesday, 27 May 2014', items: [
-          {id: 1, no: '#ST01_141223_003', price: 43.20, time: '13:42 PM', manager: 'Eric Johnson', products: []},
-          {id: 2, no: '#ST01_141223_002', price: 340.80, time: '11:50 PM', manager: 'Eric Johnson', products: [
-            {name: 'Strappy jean shoes', description: 'Strappy jean shoes, size 42', price: 175, num: 1},
-            {name: 'Bag Denim', description: 'Bag Denim Leather, Black', price: 40, num: 3},
-            {name: "Levi's Collection", description: "Levi's collection", price: 45, num: 1},
-          ]},
-          {id: 3, no: '#ST01_141223_001', price: 43.20, time: '8:28 PM', manager: 'Stanko Markovic', products: []},
-        ]},
-        {date: 'Monday, 26 May 2014', items: [
-          {id: 4, no: '#ST01_141221_003', price: 127.30, time: '10:00 AM', manager: 'Petar Savic', products: []},
-          {id: 5, no: '#ST01_141221_002', price: 47.50, time: '9:34 AM', manager: 'Eric Johnson', products: []},
-          {id: 6, no: '#ST01_141221_001', price: 86.10, time: '8:10 AM', manager: 'Stanko Markovic', products: []},
-        ]},
-      ],
+      selectedTransaction: { inventory_transactions: [] },
     }
   }
 
   componentWillMount() {
+    this.getTransactions();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (!prevProps.isFocused && this.props.isFocused) {
+      this.getTransactions();
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.transactions && nextProps.transactions.length > 0 && !this.state.selectedTransaction.id) {
+      this.setState({selectedTransaction: nextProps.transactions[0]});
+    }
+  }
+
+  getTransactions() {
     const token = this.props.user.token;
     this.props.getTransactions(token, {company_id: this.state.company_id, register_id: this.state.register_id});
   }
 
   onClickMenu() {
     this.props.navigation.dispatch(DrawerActions.openDrawer());
+  }
+
+  splitDateTime(dateTime) {
+    if (!dateTime) return {};
+
+    let arr = dateTime.split('  ');
+    let date = arr[0];
+    let time = arr[1];
+    String.prototype.splice = function(idx, rem, str) {
+      return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
+    }
+    date = moment(new Date(date)).format("dddd, DD MMM YYYY");
+    time = time.splice(5, 0, ' ');
+    return { date, time }
   }
 
   renderHeader() {
@@ -60,39 +74,33 @@ class ActivitesScreen extends Component {
   }
 
   renderLeftPanel() {
+    let exDate;
     return (
       <ScrollView style={styles.leftPanelContainer}>
         <View style={styles.panel}>
           {
-            this.state.receipts.map((receipt, index) => {
+            this.props.transactions.map((te, ti) => {
+              const {date, time} = this.splitDateTime(te.created_at);
+              const newRow = exDate != date;
+              exDate = date;
+              const selected = te.id == this.state.selectedTransaction.id;
+
               return (
-                <View key={'Receipt_' + index.toString()} style={[styles.receiptContainer, index == this.state.receipts.length - 1 ? styles.endReceiptContainer : null]}>
-                  <View style={styles.dateRow}>
-                    <Text style={styles.text1}>{receipt.date}</Text>
-                  </View>
-                  {
-                    receipt.items.map((item, i) => {
-                      return (
-                        <TouchableOpacity 
-                          key={'Item_' + index.toString() + '_' + i.toString()} 
-                          style={[styles.itemRow, item.id == this.state.selectedReceiptItemId ? styles.selectedItemRow : null]}
-                          onPress={() => this.setState({selectedReceiptItemId: item.id})}
-                        >
-                          <View style={[styles.itemContentsContainer, item.id == this.state.selectedReceiptItemId ? styles.selectedITemContentsContainer : i == receipt.items.length - 1 ? styles.endItemContentsContainer : i == 0 ? styles.startItemContentsContainer : null]}>
-                            <View style={styles.firstInfoRow}>
-                              <Text style={[styles.text1, item.id == this.state.selectedReceiptItemId ? styles.selectedText : null]}>{item.no}</Text>
-                              <Text style={[styles.text1, item.id == this.state.selectedReceiptItemId ? styles.selectedText : null]}>{item.time}</Text>
-                            </View>
-                            <View style={styles.secondInfoRow}>
-                              <Text style={[styles.text2, item.id == this.state.selectedReceiptItemId ? styles.selectedText : null]}>{'$ ' + item.price.toFixed(2)}</Text>
-                            </View>
-                          </View>
-                        </TouchableOpacity>
-                      );
-                    })
-                  }
+                <View key={ti.toString()}>
+                  {newRow ? <View style={styles.dateRow}><Text style={styles.text1}>{date}</Text></View> : null}
+                  <TouchableOpacity style={[styles.itemRow, selected ? styles.selectedItemRow : null]} onPress={() => this.setState({selectedTransaction: te})}>
+                    <View style={[styles.itemContentsContainer, selected ? styles.selectedITemContentsContainer : null]}>
+                      <View style={styles.firstInfoRow}>
+                        <Text style={[styles.text1, selected ? styles.selectedText : null]}>{te.order_number}</Text>
+                        <Text style={[styles.text1, selected ? styles.selectedText : null]}>{time}</Text>
+                      </View>
+                      <View style={styles.secondInfoRow}>
+                        <Text style={[styles.text2, selected ? styles.selectedText : null]}>{'$ ' + te.transaction_total}</Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
                 </View>
-              );
+              )
             })
           }
         </View>
@@ -101,25 +109,15 @@ class ActivitesScreen extends Component {
   }
 
   renderRightPanel() {
-    let selectedItem;
-    let selectedReceipt;
-
-    this.state.receipts.forEach((receipt) => {
-      receipt.items.forEach((item) => {
-        if (item.id == this.state.selectedReceiptItemId) {
-          selectedReceipt = receipt;
-          selectedItem = item;
-        }
-      })
-    })
+    const company_name = this.props.user.companies.filter(c => c.id == this.state.company_id)[0].name_of_company;
 
     return (
       <ScrollView style={styles.rightPanelContainer}>
         <View style={styles.panel}>
           <View style={styles.companyInfoBar}>
             <Text style={styles.text3}>EASYPOS RETAILS</Text>
-            <Text style={[styles.text2, {marginTop: 8}]}>Address: 1101 WestLake Avenue, Suite 200 Seattle, WA 98121, USA</Text>
-            <Text style={[styles.text2, {marginTop: 2,}]}>Phone: +84 0905 07 00 17  -  Email: sales@easypos.com</Text>
+            {/* <Text style={[styles.text2, {marginTop: 8}]}>Address: 1101 WestLake Avenue, Suite 200 Seattle, WA 98121, USA</Text>
+            <Text style={[styles.text2, {marginTop: 2,}]}>Phone: +84 0905 07 00 17  -  Email: sales@easypos.com</Text> */}
           </View>
           <View style={[styles.commonRow, styles.firstRow]}>
             <View style={styles.leftCol}>
@@ -129,50 +127,47 @@ class ActivitesScreen extends Component {
                 <Text style={[styles.text4]}>Date :</Text>
               </View>
               <View style={styles.labelCol}>
-                <Text>{selectedItem.no}</Text>
-                <Text>{selectedItem.manager}</Text>
-                <Text>{selectedReceipt.date}</Text>
+                <Text>{this.state.selectedTransaction.order_number}</Text>
+                <Text>{company_name}</Text>
+                <Text>{this.splitDateTime(this.state.selectedTransaction.created_at).date}</Text>
               </View>
             </View>
             <View style={styles.rightCol}>
-              <Image source={Images.qr} resizeMode='cover' style={styles.qr} />
+              {/* <Image source={Images.qr} resizeMode='cover' style={styles.qr} /> */}
             </View>
           </View>
           {
-            selectedItem.products.map((product, index) => {
+            this.state.selectedTransaction.inventory_transactions.map((product, index) => {
+              let inventory = this.props.inventories.filter(inv => inv.id == product.inventory_id)[0];
               return (
                 <View key={"Product_" + index.toString()} style={[styles.commonRow, styles.secondRow]}>
                   <View style={styles.firstCol}>
-                    <Text style={styles.text5}>{product.name}</Text>
-                    <Text style={styles.text2}>{product.description}</Text>
+                    <Text style={styles.text5}>{inventory.title}</Text>
+                    <Text style={styles.text2}>{inventory.upc_plu_sku}</Text>
                   </View>
                   <View style={styles.secondCol}>
-                    {product.num > 1 ? <Text style={styles.text4}>{product.num.toString() + " X " + "$" + product.price.toFixed(2) + " = "}</Text> : null}
-                    <Text>{"$" + (product.num * product.price).toFixed(2)}</Text>
+                    {product.quantity > 1 ? <Text style={styles.text4}>{product.quantity.toString() + " X " + "$" + inventory.price + " = "}</Text> : null}
+                    <Text>{"$" + (product.quantity * parseFloat(inventory.price)).toFixed(2)}</Text>
                   </View>
                 </View>
               );
             })
           }
           <View style={[styles.commonRow, styles.calcRow]}>
-            <Text style={styles.text4}>Discount (10%)</Text>
-            <Text>$17.00</Text>
+            <Text style={styles.text4}>Discount</Text>
+            <Text>${this.state.selectedTransaction.discount_value}</Text>
           </View>
           <View style={[styles.commonRow, styles.calcRow]}>
             <Text style={styles.text4}>Sub Total</Text>
-            <Text>$340.00</Text>
+            <Text>${this.state.selectedTransaction.value}</Text>
           </View>
           <View style={[styles.commonRow, styles.calcRow]}>
-            <Text style={styles.text4}>VAT (10%)</Text>
-            <Text>$34.00</Text>
-          </View>
-          <View style={[styles.commonRow, styles.calcRow]}>
-            <Text style={styles.text4}>Service Charge (10%)</Text>
-            <Text>$34.00</Text>
+            <Text style={styles.text4}>VAT</Text>
+            <Text>${this.state.selectedTransaction.tax_value}</Text>
           </View>
           <View style={[styles.commonRow, styles.calcRow]}>
             <Text style={styles.text6}>TOTAL</Text>
-            <Text style={styles.text6}>$391.00</Text>
+            <Text style={styles.text6}>${this.state.selectedTransaction.transaction_total}</Text>
           </View>
           <View style={[styles.commonRow, styles.calcRow]}>
             <Text style={styles.text4}>Cash</Text>
@@ -203,6 +198,8 @@ class ActivitesScreen extends Component {
 const mapStateToProps = ({pos}) => {
   return {
     user: pos.user,
+    transactions: pos.transactions,
+    inventories: pos.inventories,
   }
 }
 
@@ -212,4 +209,4 @@ const mapDispatchToProps = (dispatch) => {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ActivitesScreen)
+export default connect(mapStateToProps, mapDispatchToProps)(withNavigationFocus(ActivitesScreen))

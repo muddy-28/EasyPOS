@@ -196,7 +196,7 @@ export default class ModalPayment extends Component {
 
   renderMobile() {
     // const data = {"amount": 0.1, "order_id": 1, "company_name": this.props.company_name, "to": this.props.fcmToken }
-    const data = { amount: this.props.totalPrice, order_id: 1, company_name: this.props.company_name, to: this.props.fcmToken }
+    const data = { amount: this.props.totalPrice.toFixed(2), order_id: 1, company_name: this.props.company_name, to: this.props.fcmToken }
 
     return (
       <View style={styles.qrContainer}>
