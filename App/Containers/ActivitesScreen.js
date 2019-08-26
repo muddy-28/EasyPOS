@@ -169,14 +169,14 @@ class ActivitesScreen extends Component {
             <Text style={styles.text6}>TOTAL</Text>
             <Text style={styles.text6}>${this.state.selectedTransaction.transaction_total}</Text>
           </View>
-          <View style={[styles.commonRow, styles.calcRow]}>
+          {/* <View style={[styles.commonRow, styles.calcRow]}>
             <Text style={styles.text4}>Cash</Text>
             <Text>$91.00</Text>
           </View>
           <View style={[styles.commonRow, styles.calcRow, {borderBottomWidth: 0}]}>
             <Text style={styles.text4}>Visa</Text>
             <Text>$300.00</Text>
-          </View>
+          </View> */}
         </View>
       </ScrollView>
     );
