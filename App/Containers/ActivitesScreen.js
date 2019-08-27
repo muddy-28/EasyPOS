@@ -44,6 +44,11 @@ class ActivitesScreen extends Component {
     this.props.getTransactions(token, {company_id: this.state.company_id, register_id: this.state.register_id});
   }
 
+  getProductDiscount(id) {
+    const discounts = this.props.discounts.filter(d => d.inventory_id == id);
+    return discounts.length > 0 ? parseFloat(discounts[0].discount_value) : 0;
+  }
+
   onClickMenu() {
     this.props.navigation.dispatch(DrawerActions.openDrawer());
   }
@@ -139,6 +144,7 @@ class ActivitesScreen extends Component {
           {
             this.state.selectedTransaction.inventory_transactions.map((product, index) => {
               let inventory = this.props.inventories.filter(inv => inv.id == product.inventory_id)[0];
+              let price = parseFloat(inventory.price) * (1 - this.getProductDiscount(inventory.id) / 100);
               return (
                 <View key={"Product_" + index.toString()} style={[styles.commonRow, styles.secondRow]}>
                   <View style={styles.firstCol}>
@@ -146,8 +152,8 @@ class ActivitesScreen extends Component {
                     <Text style={styles.text2}>{inventory.upc_plu_sku}</Text>
                   </View>
                   <View style={styles.secondCol}>
-                    {product.quantity > 1 ? <Text style={styles.text4}>{product.quantity.toString() + " X " + "$" + inventory.price + " = "}</Text> : null}
-                    <Text>{"$" + (product.quantity * parseFloat(inventory.price)).toFixed(2)}</Text>
+                    {product.quantity > 1 ? <Text style={styles.text4}>{product.quantity.toString() + " X " + "$" + price + " = "}</Text> : null}
+                    <Text>{"$" + (product.quantity * price).toFixed(2)}</Text>
                   </View>
                 </View>
               );
@@ -200,6 +206,7 @@ const mapStateToProps = ({pos}) => {
     user: pos.user,
     transactions: pos.transactions,
     inventories: pos.inventories,
+    discounts: pos.discounts,
   }
 }
 
