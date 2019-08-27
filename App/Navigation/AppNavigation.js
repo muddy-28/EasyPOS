@@ -18,7 +18,7 @@ const InventoryNav = createStackNavigator({
   headerMode: 'none',
   initialRouteName: 'InventoryScreen',
   navigationOptions: {
-    drawerLabel: 'Inventories',
+    drawerLabel: 'Inventory',
   },
 })
 

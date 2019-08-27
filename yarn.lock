@@ -10316,6 +10316,11 @@ react-native-material-textfield@^0.12.0:
   dependencies:
     prop-types "^15.5.9"
 
+react-native-print@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/react-native-print/-/react-native-print-0.6.0.tgz#11286c45db5109262123ed6261f61e867cef1a89"
+  integrity sha512-lWGI5JoB/crLRlukuB7FMmfjSOwC8Cia9JHVEFjpnQWGtnRSLY+oRYwgFLzll7XPi7LqUNohFKT+jsRMA/1bRg==
+
 react-native-qrcode-svg@^5.1.2:
   version "5.1.2"
   resolved "https://registry.yarnpkg.com/react-native-qrcode-svg/-/react-native-qrcode-svg-5.1.2.tgz#1368a1142b7d4916c3d8b1903fd2046185340fd0"

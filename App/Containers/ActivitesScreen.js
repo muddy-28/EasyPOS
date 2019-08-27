@@ -1,14 +1,13 @@
 import React, { Component } from 'react'
 import { View, ScrollView, Text, TouchableOpacity, Image } from 'react-native'
 import { DrawerActions, withNavigationFocus } from 'react-navigation'
-import moment from 'moment'
 import { connect } from 'react-redux'
 
 // Styles
 import styles from './Styles/ActivitesScreenStyle'
 import PosAction from '../Redux/PosRedux'
 import HeaderInformation from '../Components/HeaderInformation'
-import { Images } from '../Themes'
+import { splitDateTime } from '../Lib/helpers';
 
 class ActivitesScreen extends Component {
   constructor (props) {
@@ -53,20 +52,6 @@ class ActivitesScreen extends Component {
     this.props.navigation.dispatch(DrawerActions.openDrawer());
   }
 
-  splitDateTime(dateTime) {
-    if (!dateTime) return {};
-
-    let arr = dateTime.split('  ');
-    let date = arr[0];
-    let time = arr[1];
-    String.prototype.splice = function(idx, rem, str) {
-      return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
-    }
-    date = moment(new Date(date)).format("dddd, DD MMM YYYY");
-    time = time.splice(5, 0, ' ');
-    return { date, time }
-  }
-
   renderHeader() {
     return (
       <HeaderInformation
@@ -85,7 +70,7 @@ class ActivitesScreen extends Component {
         <View style={styles.panel}>
           {
             this.props.transactions.map((te, ti) => {
-              const {date, time} = this.splitDateTime(te.created_at);
+              const {date, time} = splitDateTime(te.created_at);
               const newRow = exDate != date;
               exDate = date;
               const selected = te.id == this.state.selectedTransaction.id;
@@ -134,7 +119,7 @@ class ActivitesScreen extends Component {
               <View style={styles.labelCol}>
                 <Text>{this.state.selectedTransaction.order_number}</Text>
                 <Text>{company_name}</Text>
-                <Text>{this.splitDateTime(this.state.selectedTransaction.created_at).date}</Text>
+                <Text>{splitDateTime(this.state.selectedTransaction.created_at).date}</Text>
               </View>
             </View>
             <View style={styles.rightCol}>
@@ -152,7 +137,7 @@ class ActivitesScreen extends Component {
                     <Text style={styles.text2}>{inventory.upc_plu_sku}</Text>
                   </View>
                   <View style={styles.secondCol}>
-                    {product.quantity > 1 ? <Text style={styles.text4}>{product.quantity.toString() + " X " + "$" + price + " = "}</Text> : null}
+                    {product.quantity > 1 ? <Text style={styles.text4}>{product.quantity + " X " + "$" + price + " = "}</Text> : null}
                     <Text>{"$" + (product.quantity * price).toFixed(2)}</Text>
                   </View>
                 </View>

@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
-import { ScrollView, Text, View, TouchableOpacity, Image, AsyncStorage, Alert, Dimensions } from 'react-native'
+import { ScrollView, Text, View, TouchableOpacity, Image, AsyncStorage, Alert, Dimensions, Platform } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import firebase from 'react-native-firebase'
+import RNPrint from 'react-native-print'
 import { DrawerActions } from 'react-navigation'
 import { connect } from 'react-redux'
 
@@ -18,7 +19,7 @@ import ModalCharge from '../Components/ModalCharge'
 import ModalAlert from '../Components/ModalAlert'
 import ModalConfirm from '../Components/ModalConfirm'
 import ModalPayment from '../Components/ModalPayment'
-import { hexToRgba } from '../Lib/helpers'
+import { hexToRgba, splitDateTime } from '../Lib/helpers'
 
 class MainScreen extends Component {
   constructor (props) {
@@ -63,6 +64,8 @@ class MainScreen extends Component {
       // payment dialog
       paymentMethodSelectedIndex: 0,
       cashAmount: 0,
+      // print
+      selectedPrinter: null
     }
   }
 
@@ -77,6 +80,9 @@ class MainScreen extends Component {
 
   async componentWillReceiveProps(nextProps) {
     if (nextProps.createdTransaction) {
+      if (nextProps.createdTransaction.transaction_mode === "card" || nextProps.createdTransaction.transaction_mode === "cash") {
+        await this.printTransaction(nextProps.createdTransaction);
+      }
       await this.setState({ shoppingCart: [], selectedProduct: {}, overAllDiscount: 0 });
       this.calcTotalPrice();
     }
@@ -95,10 +101,7 @@ class MainScreen extends Component {
       console.log("zzz", "received");
       const { title, body } = notification;
       this.showAlert(title, body);
-      if (title === 'Succeed') {
-        await this.setState({showPaymentModal: false, shoppingCart: [], selectedProduct: {}, overAllDiscount: 0});
-        this.calcTotalPrice();
-      }
+      this.doPayWithMobile();
     });
   
     /*
@@ -136,6 +139,99 @@ class MainScreen extends Component {
       ],
       { cancelable: false },
     );
+  }
+
+  // @NOTE iOS Only
+  selectPrinter = async () => {
+    const selectedPrinter = await RNPrint.selectPrinter({ x: 100, y: 100 })
+    this.setState({ selectedPrinter })
+  }
+
+  async printTransaction(transaction) {
+    if (Platform.OS === 'ios') {
+      this.selectPrinter();
+    }
+
+    const company_name = this.props.user.companies.filter(c => c.id == this.state.company_id)[0].name_of_company;
+
+    let class_content = `
+      <style>
+        * { box-sizing: border-box; }
+        .title { margin-top: 16px; text-align: center; }
+        .sub_title { color: #808080; }
+        .padding_left { padding-left: 16px; }
+        .row:after { content: ""; display: table; clear: both; }
+        .column { float: left; }
+        .inventory_row { padding-left: 16px; padding-right: 16px; height: 36px; }
+        .inventory_column { width: 50%; }
+        .inventory_price { padding-top: 8px; text-align: right; }
+        .sku { color: #808080; }
+        .before { color: #808080; }
+        .prices_blank_column { width: 40%; }
+        .prices_info_column { width: 60%; }
+        .price_title_column { width: 50%; padding-left: 16px; }
+        .price_content_column { width: 50%; text-align: right; padding-right: 16px; }
+      </style>
+    `;
+
+    let header_content = `
+      <h2 class="title"><strong>Receipt</strong></h2>
+      <hr />
+      <p class="padding_left"><span class="sub_title">Receipt #:</span> <span>${transaction.order_number}</span></p>
+      <p class="padding_left"><span class="sub_title">Manager:</span> <span>${company_name}</span></p>
+      <p class="padding_left"><span class="sub_title">Date:</span> <span>${splitDateTime(transaction.created_at).date}</span></p>
+      <hr />
+    `;
+
+    let inventories_content = '';
+    transaction.inventory_transactions.forEach(product => {
+      let inventory = this.props.inventories.filter(inv => inv.id == product.inventory_id)[0];
+      let price = parseFloat(inventory.price) * (1 - this.getProductDiscount(inventory.id) / 100);
+  
+      inventories_content += `
+        <div class="row inventory_row">
+          <div class="column inventory_column inventory_title">
+            ${inventory.title}<br><span class="sku">${inventory.upc_plu_sku}</span>
+          </div>
+          <div class="column inventory_column inventory_price">
+            <span class="before">${product.quantity.toString()} X $${price}</span> = $${(product.quantity * price).toFixed(2)} 
+          </div>
+        </div>
+        <hr />
+      `;
+    })
+
+    let price_content = `
+      <div class="row prices_row">
+        <div class="column prices_blank_column">&nbsp;</div>
+        <div class="column prices_info_column">
+          <div class="row price_row">
+            <div class="column price_title_column sub_title">Discount</div>
+            <div class="column price_content_column">$${transaction.discount_value}</div>
+          </div>
+          <hr />
+          <div class="row price_row">
+            <div class="column price_title_column sub_title">Sub Total</div>
+            <div class="column price_content_column">$${transaction.value}</div>
+          </div>
+          <hr />
+          <div class="row price_row">
+            <div class="column price_title_column sub_title">VAT</div>
+            <div class="column price_content_column">$${transaction.tax_value}</div>
+          </div>
+          <hr />
+          <div class="row price_row">
+            <div class="column price_title_column sub_title"><strong>Total</strong></div>
+            <div class="column price_content_column"><strong>$${transaction.transaction_total}</strong></div>
+          </div>
+          <hr />
+        </div>
+      </div>
+    `;
+
+    let html = header_content + inventories_content + price_content + class_content;
+    // console.log(html);
+    await RNPrint.print({ html })
   }
 
   doPayWithCash(email) {
@@ -191,6 +287,29 @@ class MainScreen extends Component {
       "card-amount": card_amount,
       "card-exp": card_exp,
       "card-cvv": card_cvv,
+    }
+
+    this.props.postTransaction(this.props.user.token, params);
+  }
+
+  doPayWithMobile() {
+    this.setState({showChargeModal: false})
+
+    let inventories = [];
+    this.state.shoppingCart.forEach(sc => {
+      inventories.push({id: sc.product.id, quantity: sc.redNum});
+    })
+
+    let params = { 
+      company_id: this.state.company_id,
+      inventories,
+      register_id: this.state.register_id,
+      value: this.state.subTotalPrice.toFixed(2),
+      tax_value: this.state.taxPrice.toFixed(2),
+      discount_value: this.state.overAllDiscountPrice.toFixed(2),
+      transaction_total: this.state.totalPrice.toFixed(2),
+      transaction_type: "mobile",
+      transaction_mode: "mobile",
     }
 
     this.props.postTransaction(this.props.user.token, params);

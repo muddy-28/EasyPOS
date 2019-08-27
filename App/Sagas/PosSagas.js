@@ -109,6 +109,7 @@ export function * postTransaction(api, action) {
 
     yield put(PosActions.postTransactionSuccess({ transaction }))
   } else {
+    Alert.alert('Error', "Your transaction has not been approved.", [{text: 'Dismiss'}], {cancelable: false});
     yield put(PosActions.posFailure())
   }
 }

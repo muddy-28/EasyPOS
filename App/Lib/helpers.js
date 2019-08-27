@@ -1,3 +1,5 @@
+import moment from 'moment'
+
 export function hexToRgba(rgb, alpha) {
   var c;
   if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(rgb)){
@@ -66,4 +68,18 @@ export function ce_format(value) {
   ).replace(
     /\/\//g, '/' // Prevent entering more than 1 /
   );
+}
+
+export function splitDateTime(dateTime) {
+  if (!dateTime) return {};
+
+  let arr = dateTime.split('  ');
+  let date = arr[0];
+  let time = arr[1];
+  String.prototype.splice = function(idx, rem, str) {
+    return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
+  }
+  date = moment(new Date(date)).format("dddd, DD MMM YYYY");
+  time = time.splice(5, 0, ' ');
+  return { date, time }
 }
